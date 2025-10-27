@@ -26,3 +26,20 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Server
+/.DS_Store
+/.vscode/
+/.idea/
+
+/server/node_modules/
+/server/dist/
+
+/server/.env
+
+/server/.vscode/
+/server/.idea/
+
+/server/.DS_Store
+
+/server/public/
