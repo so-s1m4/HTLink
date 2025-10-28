@@ -9,7 +9,7 @@ const startServer = async () => {
     try {
         await connectDB()
 
-		await setSkills.set()
+		await new setSkills().set()
 
         const httpServer = http.createServer(app);
 

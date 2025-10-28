@@ -9,17 +9,18 @@ class setSkills {
 		}
 	}
 
-	static async isAlreadySet() {
+	async isAlreadySet() {
 		const skillsCount = await Skill.countDocuments()
-		return skillsCount == this.skills.length
+		return skillsCount == setSkills.skills.length
 	}
 
-	static async set() {
+	async set() {
 		if (await this.isAlreadySet()) {
 			console.log("Skills already set")
 			return
 		}
-		await Skill.bulkWrite(this.skills.map(skill => ({
+		await Skill.deleteMany({})
+		await Skill.bulkWrite(setSkills.skills.map(skill => ({
 			insertOne: {
 				document: {
 					name: skill
