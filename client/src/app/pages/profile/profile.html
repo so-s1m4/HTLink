@@ -1,0 +1,91 @@
+@if (data != null) {
+
+<app-block class="Main-Info">
+  <div class="header">
+    <div class="banner"></div>
+    <div class="action-btns"></div>
+    <div class="avatar"><img [src]="data.avatarUrl" alt=""></div>
+  </div>
+  <div class="body">
+    <div class="name"><p style="font-size: 18px">{{data.name}}</p></div>
+    <div class="tags">
+      <div class="tag class">{{data.class}}</div>
+      <div class="tag departement">{{data.department}}</div>
+    </div>
+    <div class="blocks">
+      <div class="block-item">
+        <div class="number">{{data.numberOfProjects}}</div>
+        <div class="label">Projects</div>
+      </div>
+      <div class="block-item">
+        <div class="number">{{data.numberOfFollowers}}</div>
+        <div class="label">Follower</div>
+      </div>
+      <div class="block-item">
+        <div class="number">{{data.numberOfFollowing}}</div>
+        <div class="label">Following</div>
+      </div>
+    </div>
+    <div class="bio">{{data.bio}}</div>
+    <div class="email">
+      <svg icon="email" /> <span>{{data.email}}</span>
+    </div>
+    <div class="registered-since">
+      <svg icon="calendar" />
+      <span>Dabei seit {{data.registeredAt | date:"MMMM yyyy"}}</span>
+    </div>
+  </div>
+</app-block>
+<app-block class="Skill-Set">
+    <div class="header">
+      <svg icon="code"></svg>
+      <h3>Skills</h3>
+    </div>
+    <div class="body">
+      <div class="tags-holder">
+        @for (skill of data.skills; track skill) {
+        <div class="tag">#{{skill}}</div>
+        }
+      </div>
+      <div class="btn add" *ngIf="isMy">
+        <svg icon="plus" />
+        <p class="label">Add Skill</p>
+      </div>
+    </div>
+</app-block>
+<app-block class="Projects-List">
+  <div class="header">
+    <svg icon="projects"></svg>
+    <h3>Projects</h3>
+
+    <div class="btn secondary" style="position: absolute; right: 0"> Alle anzeigen</div>
+  </div>
+  <div class="body">
+    <div class="projects-holder">
+      @for (project of data.projects; track project.id) {
+      <div class="project">
+        <div class="img">
+          <img [src]="project.imageUrl" alt="">
+        </div>
+        <div class="info">
+          <div class="title">
+            {{project.title}}
+          </div>
+          <div class="description">
+             {{project.description}}
+          </div>
+          <div class="tags-holder">
+            @for (tag of project.tags; track tag) {
+            <div class="tag">#{{tag}}</div>
+            }
+          </div>
+          <div class="likes">
+            <svg icon="heart" /> {{project.likes}}
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+</app-block>
+}

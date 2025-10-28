@@ -7,10 +7,16 @@
 /.angular/
 .angular/
 
+client/node_modules/
+client/.editorconfig
+.idea
+.DS_Store
+
 # Node modules and dependency files
 /client/node_modules/
-/package-lock.json
-/yarn.lock
+
+/client/package-lock.json
+/client/yarn.lock
 
 # Environment files
 /.env

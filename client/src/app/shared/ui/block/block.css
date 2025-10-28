@@ -1,0 +1,14 @@
+:host {
+  display: flex;
+  flex-direction: column;
+
+  background: var(--primary-color);
+  width: 98%;
+  height: fit-content;
+  padding: 1rem;
+  border-radius: 2rem;
+
+  gap: 1rem;
+
+  border: 1px solid var(--border-color);
+}
