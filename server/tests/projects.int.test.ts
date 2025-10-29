@@ -1,12 +1,15 @@
 import { MongoMemoryServer } from "mongodb-memory-server";
 import mongoose from "mongoose";
 import setCategories from "../src/scripts/setCategories";
+import setSkills from "../src/scripts/setSkills";
 import app from "../src/app";
 import request from "supertest";
 import { makeCreateProjectPayload } from "./fixtures/projects";
 import { beforeAll, afterAll, it, expect, describe } from "@jest/globals";
 import path from "path";
 import { ProjectStatus } from "../src/modules/projects/projects.model";
+import { Category } from "../src/modules/categories/category.model";
+import { Skill } from "../src/modules/skills/skills.model";
 import { fail } from "assert";
 let mongo: MongoMemoryServer;
 
@@ -17,6 +20,7 @@ beforeAll(async () => {
     await mongoose.connect(uri);
 
     await new setCategories().set();
+    await new setSkills().set();
 });
 
 afterAll(async () => {
@@ -27,29 +31,41 @@ afterAll(async () => {
 
 describe("Create new project", () => { 
     it("should create a new project", async () => {
-        const payload = makeCreateProjectPayload();
+        const base = makeCreateProjectPayload();
+
+        const category = await Category.findOne({ name: base.category });
+        const skills = await Skill.find({ name: { $in: base.skills } });
+        const skillIds = skills.map(s => s._id.toString());
+
+        const { category: _, skills: __, ...baseWithoutCategoryAndSkills } = base;
+        const payload = {
+            ...baseWithoutCategoryAndSkills,
+            categoryId: category?._id.toString() || '',
+            skills: skillIds.join(','),
+        };
 
         const res = await request(app)
           .post("/projects")
           .field("data", JSON.stringify(payload))
-          .attach("image", path.join(__dirname, "fixtures/test.png"))
-          .attach("image", path.join(__dirname, "fixtures/test.png"));
+          .attach("image", path.join(__dirname, "fixtures/test.jpg"))
+          .attach("image", path.join(__dirname, "fixtures/test.jpg"));
 
         // Access the DB using mongoose.model to check saved data
         const ProjectModel = mongoose.connection.collection("projects");
         const dbProject = await ProjectModel.findOne({ _id: new mongoose.Types.ObjectId(res.body.project._id) });
 
-        expect(dbProject).toHaveProperty("title", payload.title);
-        expect(dbProject).toHaveProperty("category", payload.category);
+        expect(dbProject).toHaveProperty("title", base.title);
+        expect(dbProject?.categoryId?.toString()).toBe(payload.categoryId);
         expect(dbProject).toHaveProperty("shortDescription", payload.shortDescription);
         expect(dbProject).toHaveProperty("fullReadme", payload.fullReadme);
 
         if (dbProject) {
-            expect(new Date(dbProject.deadline).toISOString()).toBe(payload.deadline); // compare dates as ISO
-            expect(dbProject.skills).toEqual(payload.skills);
-            expect(dbProject.ownerId.toString()).toBe(payload.ownerId);
+            expect(new Date(dbProject.deadline).toISOString()).toBe(base.deadline); // compare dates as ISO
+            const dbSkillIds = (dbProject.skills || []).map((id: any) => id.toString()).sort();
+            expect(dbSkillIds).toEqual(skillIds.sort());
+            expect(dbProject.ownerId).toBeDefined();
             expect(dbProject.status).toBe(ProjectStatus.PLANNED);
-            expect(dbProject._id.toString()).toBe(res.body.project._id.toString().slice(1));
+            expect(dbProject._id.toString()).toBe(res.body.project._id.toString());
         }
         else {
             fail("Project not found in database");
@@ -58,13 +74,13 @@ describe("Create new project", () => {
         expect(res.status).toBe(201);  
         expect(res.body).toHaveProperty("project");
         expect(res.body.project._id).toBeDefined();
-        expect(res.body.project.title).toBe(payload.title);
-        expect(res.body.project.category).toBe(payload.category);
-        expect(res.body.project.shortDescription).toBe(payload.shortDescription);
-        expect(res.body.project.fullReadme).toBe(payload.fullReadme);
-        expect(res.body.project.deadline).toBe(payload.deadline);
-        expect(res.body.project.skills).toBe(payload.skills);
-        expect(res.body.project.ownerId).toBe(payload.ownerId);
+        expect(res.body.project.title).toBe(base.title);
+        expect(res.body.project.category).toBe(payload.categoryId);
+        expect(res.body.project.shortDescription).toBe(base.shortDescription);
+        expect(res.body.project.fullReadme).toBe(base.fullReadme);
+        expect(new Date(res.body.project.deadline).toISOString()).toBe(base.deadline);
+        expect(res.body.project.skills.sort()).toEqual(skillIds.sort());
+        expect(res.body.project.ownerId).toBeDefined();
         expect(res.body.project.status).toBe(ProjectStatus.PLANNED);
 
         // check images

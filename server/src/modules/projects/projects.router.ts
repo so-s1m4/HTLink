@@ -1,0 +1,15 @@
+import {Router} from "express";
+import fs from "fs";
+import {ErrorWrapper} from "../../common/utils/utils.wrappers";
+import ProjectsController from "./projects.controller";
+import {upload, uploadDir} from "./utils/storage";
+
+const projectsRouter = Router();
+
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+projectsRouter.post('/', upload.array('image', 5), ErrorWrapper(ProjectsController.createProject));
+
+export default projectsRouter;

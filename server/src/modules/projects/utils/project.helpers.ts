@@ -1,0 +1,57 @@
+import mongoose from "mongoose";
+import { Category } from "../../categories/category.model";
+import { Skill } from "../../skills/skills.model";
+import { ErrorWithStatus } from "../../../common/middlewares/errorHandlerMiddleware";
+import { FullProjectDto } from "../dto/full.project.dto";
+import { ProjectDocument } from "../projects.model";
+
+export const toObjectId = (id: string) => new mongoose.Types.ObjectId(id);
+
+export const parseIdArray = (input: string[] | string): string[] => {
+    if (Array.isArray(input)) return input;
+    return String(input || '')
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+};
+
+export async function fetchCategoryOrFail(categoryId: string) {
+    const objectId = toObjectId(categoryId);
+    const category = await Category.findById(objectId).catch(() => null);
+    if (!category) throw new ErrorWithStatus(400, "Category not found");
+    return objectId;
+}
+
+export async function fetchSkillsOrFail(skillIds: string[]) {
+    const objectIds = skillIds.map(toObjectId);
+    const skills = await Skill.find({ _id: { $in: objectIds } }).catch(() => []);
+    if (skills.length !== objectIds.length) {
+        throw new ErrorWithStatus(400, "One or more skills not found");
+    }
+    return skills.map(s => s._id);
+}
+
+export function mapProjectToFullDto(newProject: ProjectDocument, images: Array<{ _id: mongoose.Types.ObjectId; image_path: string; projectId: mongoose.Types.ObjectId; createdAt: Date; updatedAt: Date; }> = []): FullProjectDto {
+    return {
+        _id: newProject._id.toString(),
+        title: newProject.title,
+        category: newProject.categoryId.toString(),
+        shortDescription: newProject.shortDescription,
+        fullReadme: newProject.fullReadme || '',
+        deadline: newProject.deadline.toISOString(),
+        ownerId: newProject.ownerId.toString(),
+        status: newProject.status,
+        skills: (newProject.skills as unknown as mongoose.Types.ObjectId[]).map(id => id.toString()),
+        images: images.map(img => ({
+            _id: img._id.toString(),
+            image_path: img.image_path,
+            projectId: img.projectId.toString(),
+            createdAt: img.createdAt.toISOString(),
+            updatedAt: img.updatedAt.toISOString(),
+        })),
+        createdAt: newProject.createdAt.toISOString().slice(0, 10),
+        updatedAt: newProject.updatedAt.toISOString().slice(0, 10),
+    };
+}
+
+
