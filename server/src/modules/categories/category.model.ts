@@ -15,7 +15,6 @@ export const categorySchema = new Schema<ICategory>({
         type: Schema.Types.ObjectId,
         ref: 'Project',
         required: false
-    }]
-})
+    }]})
 
 export const Category = model<ICategory>("Category", categorySchema)
