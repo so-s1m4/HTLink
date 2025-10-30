@@ -55,4 +55,21 @@ export default class ProjectsService {
 
         return mapProjectToFullDto(newProject, images);
     }
+
+    static async updateStatus(projectId: string, status: ProjectStatus) {
+        if (!projectId || !mongoose.Types.ObjectId.isValid(projectId)) {
+            throw new ErrorWithStatus(400, "Invalid project id");
+        }
+        const project = await Project.findByIdAndUpdate(
+          projectId,
+          { $set: { status } },
+          { new: true, runValidators: true, context: "query" }
+        );
+        if (!project) {
+            throw new ErrorWithStatus(404, "Project not found");
+        }
+
+        //TODO: add images to the response
+        return mapProjectToFullDto(project);
+    }
 }

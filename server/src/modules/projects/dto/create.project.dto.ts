@@ -19,6 +19,3 @@ export const createProjectSchema = Joi.object({
     skills: Joi.string().required(),
 })
 
-export const createProjectDto = (data: any): CreateProjectDto => {
-    return validationWrapper(createProjectSchema, data)
-}

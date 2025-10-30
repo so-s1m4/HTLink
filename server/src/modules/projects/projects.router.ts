@@ -11,5 +11,6 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 projectsRouter.post('/', upload.array('image', 5), ErrorWrapper(ProjectsController.createProject));
+projectsRouter.patch('/:id/update_status', ErrorWrapper(ProjectsController.updateStatus));
 
 export default projectsRouter;
