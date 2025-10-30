@@ -195,3 +195,143 @@ describe("Create new project", () => {
         .expect(400);
     })
 })
+
+describe("List projects", () => {
+    async function createProjectWith(overrides: Record<string, any> = {}) {
+        const base = makeCreateProjectPayload(overrides.title ? { title: overrides.title } : {});
+        const { payload } = await prepareProjectPayload(base, overrides);
+        const res = await createProjectRequest(payload);
+        expect(res.status).toBe(201);
+        return res.body.project;
+    }
+
+    it("should list projects with defaults and correct pagination", async () => {
+        await Project.deleteMany({});
+        const p1 = await createProjectWith({ title: "Alpha Project" });
+        const p2 = await createProjectWith({ title: "Beta Project" });
+        const p3 = await createProjectWith({ title: "Gamma Project" });
+
+        const res = await request(app).get("/projects").expect(200);
+        expect(Array.isArray(res.body.items)).toBe(true);
+        expect(res.body.total).toBe(3);
+        expect(res.body.page).toBe(1);
+        expect(res.body.limit).toBe(10);
+        expect(res.body.totalPages).toBe(1);
+        const titles = res.body.items.map((i: any) => i.title).sort();
+        expect(titles).toEqual([p1.title, p2.title, p3.title].sort());
+    });
+
+    it("should filter by search across title", async () => {
+        await Project.deleteMany({});
+        await createProjectWith({ title: "Unique Searchable Title" });
+        await createProjectWith({ title: "Another One" });
+
+        const res = await request(app)
+            .get("/projects")
+            .query({ search: "searchable" })
+            .expect(200);
+        expect(res.body.total).toBe(1);
+        expect(res.body.items[0].title).toBe("Unique Searchable Title");
+    });
+
+    it("should filter by category id", async () => {
+        await Project.deleteMany({});
+        const mobile = await Category.findOne({ name: "Mobile development" });
+        const web = await Category.findOne({ name: "Web development" });
+        expect(mobile && web).toBeTruthy();
+
+        await createProjectWith({ title: "Mobile App", categoryId: mobile?._id.toString() });
+        await createProjectWith({ title: "Website", categoryId: web?._id.toString() });
+
+        const res = await request(app)
+            .get("/projects")
+            .query({ category: mobile?._id.toString() })
+            .expect(200);
+        expect(res.body.total).toBe(1);
+        expect(res.body.items[0].title).toBe("Mobile App");
+    });
+
+    it("should filter by status (case-insensitive)", async () => {
+        await Project.deleteMany({});
+        const created = await createProjectWith({ title: "Status Change" });
+        await request(app)
+            .patch(`/projects/${created._id}/update_status`)
+            .send({ status: ProjectStatus.IN_PROGRESS })
+            .expect(200);
+
+        await createProjectWith({ title: "Still Planned" });
+
+        const res = await request(app)
+            .get("/projects")
+            .query({ status: "in progress" })
+            .expect(200);
+        expect(res.body.total).toBe(1);
+        expect(res.body.items[0].status).toBe(ProjectStatus.IN_PROGRESS);
+    });
+
+    it("should filter by skills (requires all)", async () => {
+        await Project.deleteMany({});
+        const s1 = await Skill.findOne({ name: "Express Js" });
+        const s2 = await Skill.findOne({ name: "Angular" });
+        expect(s1 && s2).toBeTruthy();
+
+        const bothSkills = `${s1?._id.toString()},${s2?._id.toString()}`;
+        await createProjectWith({ title: "Both Skills", skills: bothSkills });
+        await createProjectWith({ title: "Only One", skills: s1?._id.toString() });
+
+         const res = await request(app)
+            .get("/projects")
+            .query({ skills: [s1?._id.toString(), s2?._id.toString()] })
+            .expect(200);
+        expect(res.body.total).toBe(1);
+        expect(res.body.items[0].title).toBe("Both Skills");
+    });
+
+    it("should support pagination via page and limit", async () => {
+        await Project.deleteMany({});
+        await createProjectWith({ title: "Proj1" });
+        await createProjectWith({ title: "Proj2" });
+        await createProjectWith({ title: "Proj3" });
+
+        const res = await request(app)
+            .get("/projects")
+            .query({ limit: 2, page: 2 })
+            .expect(200);
+        expect(res.body.page).toBe(2);
+        expect(res.body.limit).toBe(2);
+        expect(res.body.total).toBe(3);
+        expect(res.body.totalPages).toBe(2);
+        expect(res.body.items.length).toBe(1);
+    });
+
+    it("should return 400 for invalid status filter", async () => {
+        const res = await request(app)
+            .get("/projects")
+            .query({ status: "not_a_status" })
+            .expect(400);
+        expect(res.status).toBe(400);
+    });
+
+    it("rejects invalid query params with 400 (limit/page/category/skills)", async () => {
+
+        await request(app).get("/projects").query({ page: 0 }).expect(400);
+        await request(app).get("/projects").query({ limit: -5 }).expect(400);
+        await request(app).get("/projects").query({ page: "abc" }).expect(400);
+        await request(app).get("/projects").query({ limit: "abc" }).expect(400);
+    
+
+        await request(app).get("/projects").query({ category: "not-an-id" }).expect(400);
+    
+
+        await request(app).get("/projects").query({ skills: ["ok", "not-an-id"] }).expect(400);
+      });
+
+    
+      it("search is case-insensitive and trims whitespace", async () => {
+        await createProjectWith({ title: "Unique Searchable Title" });
+        const res = await request(app).get("/projects").query({ search: "  SEARCHABLE  " }).expect(200);
+        expect(res.body.total).toBe(1);
+        expect(res.body.items[0].title).toBe("Unique Searchable Title");
+      });
+});
+

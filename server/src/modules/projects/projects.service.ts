@@ -3,7 +3,7 @@ import { Project, ProjectStatus } from "./projects.model";
 import { FullProjectDto } from "./dto/full.project.dto";
 import { ErrorWithStatus } from "../../common/middlewares/errorHandlerMiddleware";
 import mongoose from "mongoose";
-import { fetchCategoryOrFail, fetchSkillsOrFail, mapProjectToFullDto, parseIdArray } from "./utils/project.helpers";
+import { fetchCategoryOrFail, fetchSkillsOrFail, mapProjectToFullDto, parseIdArray, toObjectId } from "./utils/project.helpers";
 import { Image } from "./images/image.model";
 import type { Express } from "express";
 import path from "path";
@@ -56,6 +56,85 @@ export default class ProjectsService {
         return mapProjectToFullDto(newProject, images);
     }
 
+    static async listProjects(params: {
+        search?: string,
+        category?: string,
+        status?: string,
+        skills?: string[],
+        page?: number,
+        limit?: number,
+    }) {
+        const {
+            search = '',
+            category,
+            status,
+            skills,
+            page = 1,
+            limit = 10,
+        } = params;
+
+        const filter: Record<string, unknown> = {};
+
+        const searchFilter = this.createSearchFilter(search);
+        if (typeof searchFilter !== 'undefined') {
+            filter.$or = searchFilter;
+        }
+
+        if (category) {
+            filter.categoryId = toObjectId(category);
+        }
+
+
+        if (status) {
+            const matched = (Object.values(ProjectStatus) as string[])
+                .find(v => v.toLowerCase() === status.toLowerCase());
+            if (!matched) {
+                throw new ErrorWithStatus(400, `Invalid status: ${status}`);
+            }
+            filter.status = matched;
+        }
+
+
+        if (typeof skills !== 'undefined') {
+            const input = Array.isArray(skills) ? skills : [skills];
+            
+            const objectIds = input.map(toObjectId);
+            if (objectIds.length > 0) {
+                filter.skills = { $all: objectIds };
+            }
+        }
+
+        const safeLimit = Math.max(1, Math.min(100, Number(limit) || 10));
+        const safePage = Math.max(1, Number(page) || 1);
+        const skip = (safePage - 1) * safeLimit;
+
+        const [total, projects] = await Promise.all([
+            Project.countDocuments(filter),
+            Project.find(filter)
+                .populate('skills')
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(safeLimit)
+        ]);
+
+        const items = projects.map(p => ({
+            id: p._id.toString(),
+            title: p.title,
+            shortDescription: p.shortDescription,
+            tags: p.skills,
+            deadline: p.deadline,
+            status: p.status,
+        }));
+
+        return {
+            items,
+            page: safePage,
+            limit: safeLimit,
+            total,
+            totalPages: Math.max(1, Math.ceil(total / safeLimit)),
+        };
+    }
+
     static async updateStatus(projectId: string, status: ProjectStatus) {
         if (!projectId || !mongoose.Types.ObjectId.isValid(projectId)) {
             throw new ErrorWithStatus(400, "Invalid project id");
@@ -72,4 +151,20 @@ export default class ProjectsService {
         //TODO: add images to the response
         return mapProjectToFullDto(project);
     }
+
+    static createSearchFilter(search: string) {
+
+        if (search && search.trim()) {
+            const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");  // Example: input node.js (beta)? becomes node\.js \(beta\)\?,
+            const regex = new RegExp(escaped, 'i');
+            return [
+                    { title: regex },
+                    { shortDescription: regex },
+                    { fullReadme: regex },
+                ];
+            }
+            return undefined;
+        }
+    
 }
+
