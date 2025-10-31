@@ -10,7 +10,7 @@ import path from "path";
 
 // helpers moved to ./utils/project.helpers
 
-export default class ProjectsService { 
+export default class ProjectsService {
 
     static async createProject(project: CreateProjectDto, files: Express.Multer.File[] = []): Promise<FullProjectDto> {
 
@@ -97,7 +97,7 @@ export default class ProjectsService {
 
         if (typeof skills !== 'undefined') {
             const input = Array.isArray(skills) ? skills : [skills];
-            
+
             const objectIds = input.map(toObjectId);
             if (objectIds.length > 0) {
                 filter.skills = { $all: objectIds };
@@ -152,6 +152,56 @@ export default class ProjectsService {
         return mapProjectToFullDto(project);
     }
 
+    static async getProjectById(projectId: string) {
+
+        if (!mongoose.Types.ObjectId.isValid(projectId)) {
+            throw new ErrorWithStatus(400, "Invalid project id");
+        }
+
+        const project = await Project.findById(projectId)
+        if (!project) {
+            throw new ErrorWithStatus(404, "Project not found");
+        }
+        return mapProjectToFullDto(project)
+
+    }
+
+    // static async getProjectByOwnerId(ownerId: string) {
+    //     if (!mongoose.Types.ObjectId.isValid(ownerId)) {
+    //         throw new ErrorWithStatus(400, "Invalid owner id");
+    //     }
+    //     const project = await Project.findOne({ ownerId: ownerId })
+    //     if (!project) {
+    //         throw new ErrorWithStatus(404, "Project not found");
+    //     }
+    //     return mapProjectToFullDto(project)
+    // }
+
+    static async updateProject(projectId: string, project: FullProjectDto) {
+
+    }
+
+    static async deleteProject(projectId: string, userId: string) {
+
+           if (!mongoose.Types.ObjectId.isValid(projectId)) {
+               throw new ErrorWithStatus(400, "Invalid project id");
+           }
+           if (!mongoose.Types.ObjectId.isValid(userId) ) throw new ErrorWithStatus(400, "Invalid user id");
+
+           const project = await Project.findById(projectId);
+           if (!project) {
+               throw new ErrorWithStatus(404, "Project not found");
+           }
+
+           if (project.ownerId.toString() !== userId) {
+               throw new ErrorWithStatus(403, "Forbidden");
+           }
+
+           await Project.deleteOne({ _id: project._id });
+           return { success: true };
+
+    }
+
     static createSearchFilter(search: string) {
 
         if (search && search.trim()) {
@@ -165,6 +215,6 @@ export default class ProjectsService {
             }
             return undefined;
         }
-    
+
 }
 

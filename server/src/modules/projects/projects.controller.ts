@@ -65,6 +65,31 @@ export default class ProjectsController{
         }
     }
 
+    static async getProjectById(req: Request, res: Response, next: NextFunction) {
+        try {
+            const projectId = req.params.id;
+            if (!projectId) throw new ErrorWithStatus(400, "Project ID is required");
+            const project = await ProjectsService.getProjectById(projectId);
+            res.status(200).json({ project });
+        }
+        catch (err) {
+            next(err);
+        }
+    }
+
+    // static async getMyProjects(req: Request, res: Response, next: NextFunction) {
+    //     try {
+    //         const ownerId = res.locals.user.userId;
+    //         if (!ownerId) throw new ErrorWithStatus(400, "Owner ID is required");
+    //         const project = await ProjectsService.getProjectByOwnerId(ownerId);
+    //         res.status(200).json({ project });
+    //     }
+    //     catch (err) {
+    //         next(err);
+    //     }
+    // }
+
+
     static async updateStatus(req: Request, res: Response, next: NextFunction) {
         try {
             const dto = validationWrapper(statusSchema, req.body);

@@ -196,6 +196,46 @@ describe("Create new project", () => {
     })
 })
 
+describe("get project by id and by owner id", () => {
+    it("should return project by id", async () => {
+        const base = makeCreateProjectPayload();
+        await ensureProjectExists(base);
+        const res = await request(app).get(`/projects/${projectId}`).expect(200);
+        expect(res.body.project._id).toBe(projectId);
+        expect(res.body.project.title).toBe(base.title);
+        expect(res.body.project.shortDescription).toBe(base.shortDescription);
+        expect(res.body.project.fullReadme).toBe(base.fullReadme);
+        expect(new Date(res.body.project.deadline).toISOString()).toBe(base.deadline);
+        expect(res.body.project.ownerId).toBeDefined();
+        expect(res.body.project.status).toBe(ProjectStatus.PLANNED);
+    })
+
+    it('should return 400 if id is not valid', async() => {
+        const res = await request(app).get('/projects/123').expect(400);
+    });
+    /*it("should return project by owner id", async () => {
+       const userRes = await request(app)
+           .post('/login')
+           .send({ login: '20220467', password: 'mypass' });
+       const token = userRes.body.token;
+       const userId = userRes.body.userId;
+        const base = makeCreateProjectPayload();
+        await ensureProjectExists(base);
+        const res = await request(app).get(`/projects/${projectId}`).expect(200);
+        expect(res.body.project._id).toBe(projectId);
+        expect(res.body.project.title).toBe(base.title);
+        expect(res.body.project.shortDescription).toBe(base.shortDescription);
+        expect(res.body.project.fullReadme).toBe(base.fullReadme);
+        expect(new Date(res.body.project.deadline).toISOString()).toBe(base.deadline);
+        expect(res.body.project.ownerId).toBeDefined();
+        expect(res.body.project.status).toBe(ProjectStatus.PLANNED);
+    })
+
+    it('should return 400 if id is not valid', () => {
+        const res = request(app).get('/projects/123').expect(400);
+    });*/
+})
+
 describe("List projects", () => {
     async function createProjectWith(overrides: Record<string, any> = {}) {
         const base = makeCreateProjectPayload(overrides.title ? { title: overrides.title } : {});
