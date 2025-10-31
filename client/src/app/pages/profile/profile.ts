@@ -4,7 +4,7 @@ import {SvgIconComponent} from '@shared/utils/svg.component';
 import {AuthService} from '@core/services/auth.service';
 import {CommonModule} from '@angular/common';
 import {ProfileType} from './data/profile.service';
-import {ActivatedRoute, Router} from '@angular/router';
+import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 import {ProfileService as ProfileService} from './data/profile.service';
 import {Tag} from '@shared/ui/tag/tag';
 import {ProjectPreview} from '@shared/ui/project-preview/project-preview';
@@ -19,6 +19,7 @@ import {ProjectPreview} from '@shared/ui/project-preview/project-preview';
       CommonModule,
       Tag,
       ProjectPreview,
+      RouterLink,
     ],
   templateUrl: './profile.html',
   styleUrl: './profile.css'

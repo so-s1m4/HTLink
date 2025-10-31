@@ -5,7 +5,7 @@
     <div class="banner"></div>
     <div class="action-btns"></div>
     <div class="avatar"><img [src]="data.avatarUrl" alt=""></div>
-    <div class="btn edit" *ngIf="isMy"><svg icon="pen"></svg></div>
+    <div class="btn edit" [routerLink]="'/profile/me/edit'" *ngIf="isMy"><svg icon="pen"></svg></div>
   </div>
   <div class="body">
     <div class="name"><p style="font-size: 18px">{{data.name}}</p></div>
