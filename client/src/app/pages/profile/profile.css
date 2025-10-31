@@ -41,7 +41,7 @@ app-block .header {
     .banner {
       height: 10rem;
       width: 100%;
-      background-color: var(--main-color);
+      background: var(--main-color-light);
       border-radius: 2rem 2rem 0 0;
     }
     .avatar {
