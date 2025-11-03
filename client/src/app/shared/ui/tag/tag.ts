@@ -7,6 +7,7 @@ import {SvgIconComponent} from '@shared/utils/svg.component';
     SvgIconComponent
   ],
   templateUrl: './tag.html',
+  standalone: true,
   styleUrl: './tag.css'
 })
 export class Tag {

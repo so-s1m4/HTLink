@@ -12,6 +12,7 @@ import {Login} from '@app/pages/login/login';
 import {AuthGuard} from '@core/gruards/auth.guard';
 import {NotAuthGuard} from '@core/gruards/notauth.guard';
 import {Edit} from '@app/pages/profile/children/edit/edit';
+import {Users} from '@app/pages/users/users';
 
 export const routes: Routes = [
   {
@@ -51,6 +52,11 @@ export const routes: Routes = [
         path: "news",
         canActivate: [AuthGuard],
         component: News
+      },
+      {
+        path: "users",
+        canActivate: [AuthGuard],
+        component: Users
       },
       {
         path: "more",

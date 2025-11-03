@@ -9,12 +9,12 @@
   </div>
 </div>
 <form [formGroup]="profileForm" class="body">
-  <app-block style="align-items: center">
+  <app-block style="align-items: center; grid-area: a">
     <img class="avatar" [src]="profileForm.value.photo_path" alt="">
     <label class="btn secondary" for="fileInput">Change Photo</label>
     <input type="file" hidden id="fileInput" accept="image/*"  (change)="onFileSelected($event)" />
   </app-block>
-  <app-block>
+  <app-block style="grid-area: b">
     <div class="header">
       <h3>Your name</h3>
     </div>
@@ -29,7 +29,7 @@
       </div>
     </div>
   </app-block>
-  <app-block>
+  <app-block style="grid-area: c">
     <div class="header">
       <h3>Bio</h3>
     </div>
@@ -40,7 +40,7 @@
       </div>
     </div>
   </app-block>
-  <app-block>
+  <app-block style="grid-area: d">
     <div class="header">
       <h3>Links</h3>
     </div>
@@ -55,17 +55,13 @@
       </div>
     </div>
   </app-block>
-  <app-block>
+  <app-block style="grid-area: e">
     <div class="header">
       <h3>Skills</h3>
     </div>
     <div class="content">
-      <select class="add-skill" (change)="addSkill($event)">
-        <option value="" disabled selected>Add Skill</option>
-        @for (skill of skills; track skill.id) {
-          <option value="{{skill.id}}">{{skill.name}}</option>
-        }
-      </select>
+      <app-select value="" class="add-skill" (change)="addSkill($event)" [options]="toOptions(skills)">
+      </app-select>
       <div class="tags-holder">
         @for (skill of profileForm.value.skills; track skill.id) {
           <app-tag [removable]="true" (remove)="removeSkill(skill)">{{skill.name}}</app-tag>

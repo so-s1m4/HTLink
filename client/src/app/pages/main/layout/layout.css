@@ -50,7 +50,7 @@
   overflow: auto;
   z-index: 1;
 
-  padding-bottom: 4rem;
+  padding-bottom: 5rem;
 }
 
 @media (max-width: 800px) {

@@ -3,6 +3,7 @@ import {API_URL,DEFAULT_AVATAR_URL} from '@core/eviroments/config.constants';
 
 @Pipe({
   name: 'img',
+  standalone: true
 })
 export class ImgPipe implements PipeTransform {
   public static transform(

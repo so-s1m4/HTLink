@@ -1,12 +1,12 @@
 :host {
   width: 100%;
   height: fit-content;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   gap: 1.5rem;
 
-  padding: 2vh 1rem 1rem 1rem;
+  display: grid;
+  grid-template-areas: "a b" "a c" "a ." "d d";
+
+  padding: 5% 20% 0 20%;
 }
 app-block .header {
   width: 100%;
@@ -184,10 +184,21 @@ app-block .header {
 }
 
 
-@media (min-width: 801px) {
+@media (max-width: 1200px) {
   :host {
+    display: flex;
+    flex-direction: column;
     align-items: flex-start;
-    padding: 0 20%;
-    gap: 2rem;
+    gap: 1rem;
+    padding: 5vh 20% 1rem 20%;
+  }
+}
+@media (max-width: 800px) {
+  :host {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 2vh 1rem 1rem 1rem;
   }
 }

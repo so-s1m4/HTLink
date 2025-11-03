@@ -3,6 +3,8 @@ import {ProfileType, TagType} from '@core/types/types.constans';
 import {HttpClient} from '@angular/common/http';
 import {NotificationService} from '@core/services/notification.service';
 import {AuthService} from '@core/services/auth.service';
+import {cleanObject} from '@shared/utils/cleanObject';
+import {firstValueFrom} from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -23,6 +25,19 @@ export class ProfileService {
   }
 
 
+  async getUsers(search: {value: string, filters:{[key: string]: any}}): Promise<ProfileType[]> {
+    const data = cleanObject({
+      nameContains: search.value,
+      ...search.filters,
+      class: search.filters["class"] + search.filters["letter"],
+      letter: undefined
+    })
+    const res = await firstValueFrom(
+      this.http.get<{ users: ProfileType[] }>('/api/users/', { params: data })
+    );
+    return res.users;
+
+  }
   async updateProfile(data: any): Promise<void> {
     const dataNew = new FormData();
     for (const key in data) {
