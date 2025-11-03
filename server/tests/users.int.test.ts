@@ -1,13 +1,17 @@
 import request from "supertest";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import mongoose from "mongoose";
-import app from "../src/app";
+import app, { publicDir } from "../src/app";
 import jwt from "jsonwebtoken";
 import { config } from "../src/config/config";
 import { User } from "../src/modules/users/users.model";
 import UsersService from "../src/modules/users/users.service";
 import setSkills from "../src/scripts/setSkills";
 import { beforeAll, afterAll, it, expect, describe, jest, afterEach, beforeEach } from "@jest/globals";
+import deleteFile from "../src/common/utils/utils.deleteFile";
+import isPhotoExist from "../src/common/utils/utils.isPhotoExist";
+import path from "path";
+import { Skill } from "../src/modules/skills/skills.model";
 
 let mongo: MongoMemoryServer;
 let token: string;
@@ -20,6 +24,7 @@ beforeAll(async () => {
   await mongoose.connect(uri);
 
   jest.spyOn(UsersService, "isUserValid").mockResolvedValue(true);
+
   await new setSkills(["Express Js", "Angular", "Python"]).set();
 });
 
@@ -48,10 +53,10 @@ afterAll(async () => {
   jest.restoreAllMocks();
 });
 
-describe("POST /login", () => {
+describe("POST /api/login", () => {
   it("should return JWT", async () => {
     const res = await request(app)
-      .post("/login")
+      .post("/api/login")
       .send({
         login: pc_number,
         password: "1234",
@@ -66,10 +71,11 @@ describe("POST /login", () => {
 });
 
 
-describe("PATCH /users/me", () => {
+describe("PATCH /api/users/me", () => {
 	it("should update user", async () => {
+		const skills = await Skill.find({})
 		const res = await request(app)
-			.patch('/users/me')
+			.patch('/api/users/me')
 			.send({
 				first_name: "John",
 				last_name: "Doe",
@@ -77,6 +83,7 @@ describe("PATCH /users/me", () => {
 				department: "IF",
 				class: "3BHIF",
 				github_link: "https://github.com/john-doe",
+				skills: [skills[0]._id.toString()],
 			})
 			.set('Authorization', `Bearer ${token}`)
 			.expect(200)
@@ -87,15 +94,41 @@ describe("PATCH /users/me", () => {
 		expect(res.body.user.department).toBe("IF");
 		expect(res.body.user.class).toBe("3BHIF");
 		expect(res.body.user.github_link).toBe("https://github.com/john-doe");
+		expect(res.body.user.skills.length).toBe(1)
+		expect(res.body.user.skills[0].name).toBe("Express Js")
 	})
 
-	it("PATCH /users/me → 401 without token", async () => {
-		await request(app).patch("/users/me").send({ first_name: "X" }).expect(401);
+	it("PATCH /api/users/me → 401 without token", async () => {
+		await request(app).patch("/api/users/me").send({ first_name: "X" }).expect(401);
 	});
+
+	it("should upload photo and delete it if new uploaded", async () => {
+		const res = await request(app)
+			.patch('/api/users/me')
+			.attach('photo', path.resolve(__dirname, 'public/test.png'))
+			.set('Authorization', `Bearer ${token}`)
+			.expect(200)
+		
+		expect(isPhotoExist(res.body.user.photo_path)).toBe(true)
+
+		const photoPath = res.body.user.photo_path
+
+		const res2 = await request(app)
+			.patch('/api/users/me')
+			.attach('photo', path.resolve(__dirname, 'public/test_copy.png'))
+			.set('Authorization', `Bearer ${token}`)
+			.expect(200)
+
+		expect(isPhotoExist(res2.body.user.photo_path)).toBe(true)
+		expect(isPhotoExist(photoPath)).toBe(false)
+
+		await deleteFile(res2.body.user.photo_path)
+		expect(isPhotoExist(res2.body.user.photo_path)).toBe(false)
+	})
 
 	it("should return error", async () => {
 		await request(app)
-			.patch('/users/me')
+			.patch('/api/users/me')
 			.send({
 				first_name: "J",
 			})
@@ -103,7 +136,7 @@ describe("PATCH /users/me", () => {
 			.expect(400)
 		
 		await request(app)
-			.patch('/users/me')
+			.patch('/api/users/me')
 			.send({
 				department: "IFF"
 			})
@@ -111,7 +144,7 @@ describe("PATCH /users/me", () => {
 			.expect(400)
 			
 		await request(app)
-			.patch('/users/me')
+			.patch('/api/users/me')
 			.send({
 				class: "3BHIFFF"
 			})
@@ -119,19 +152,27 @@ describe("PATCH /users/me", () => {
 			.expect(400)
 		
 		await request(app)
-			.patch('/users/me')
+			.patch('/api/users/me')
 			.send({
 				role: "admin"
+			})
+			.set('Authorization', `Bearer ${token}`)
+			.expect(400)
+		
+		await request(app)
+			.patch('/api/users/me')
+			.send({
+				photo_path: "test.png"
 			})
 			.set('Authorization', `Bearer ${token}`)
 			.expect(400)
 	})
 })
 
-describe("GET /users/me", () => {
+describe("GET /api/users/me", () => {
 	it("should return me", async () => {
 		const res = await request(app)
-			.get("/users/me")
+			.get("/api/users/me")
 			.set('Authorization', `Bearer ${token}`)
 			.expect(200);
 		
@@ -140,18 +181,18 @@ describe("GET /users/me", () => {
 		expect(res.body.user.first_name).toBe("Test")
 	})
 
-	it("GET /users/me → 401 with invalid token", async () => {
+	it("GET /api/users/me → 401 with invalid token", async () => {
 		await request(app)
-		  .get("/users/me")
+		  .get("/api/users/me")
 		  .set("Authorization", "Bearer invalid.token")
 		  .expect(401);
 	});
 })
 
-describe(`GET /users/:id`, () => {
+describe(`GET /api/users/:id`, () => {
 	it("should return me", async () => {
 		const res = await request(app)
-			.get(`/users/${id}`)
+			.get(`/api/users/${id}`)
 			.expect(200);
 		
 		expect(res.body.user.pc_number).toBe(pc_number)
@@ -159,18 +200,18 @@ describe(`GET /users/:id`, () => {
 		expect(res.body.user.first_name).toBe("Test")
 	})
 
-	it("GET /users/:id → 404 if not found", async () => {
+	it("GET /api/users/:id → 404 if not found", async () => {
 		const nonExistingId = new mongoose.Types.ObjectId().toString();
-		await request(app).get(`/users/${nonExistingId}`).expect(404);
+		await request(app).get(`/api/users/${nonExistingId}`).expect(404);
 	});
 
-	it("GET /users/:id → 400 for invalid ObjectId", async () => {
-		await request(app).get("/users/not-an-objectid").expect(400);
+	it("GET /api/users/:id → 400 for invalid ObjectId", async () => {
+		await request(app).get("/api/users/not-an-objectid").expect(400);
 	});
 })
 
 
-describe("GET /users/", () => {
+describe("GET /api/users/", () => {
 	it("should return users filtered by nameContains (case-insensitive)", async () => {
 		await User.create([
 			{ pc_number: 1, first_name: 'Alice', last_name: 'Smith', department: 'IF', class: '1AHIF' },
@@ -179,7 +220,7 @@ describe("GET /users/", () => {
 		])
 
 		const res = await request(app)
-			.get('/users')
+			.get('/api/users')
 			.query({ nameContains: 'ali' })
 			.expect(200)
 
@@ -196,7 +237,7 @@ describe("GET /users/", () => {
 		])
 
 		const res = await request(app)
-			.get('/users')
+			.get('/api/users')
 			.query({ department: 'IF', class: '5DHIF' })
 			.expect(200)
 
@@ -210,7 +251,7 @@ describe("GET /users/", () => {
 		await User.create({ pc_number: 22, first_name: 'Eve', last_name: 'White', department: 'MB', class: '2CHIF' })
 
 		const res = await request(app)
-			.get('/users')
+			.get('/api/users')
 			.query({ pc_id: 22 })
 			.expect(200)
 
@@ -227,14 +268,14 @@ describe("GET /users/", () => {
 		])
 
 		const firstPage = await request(app)
-			.get('/users')
+			.get('/api/users')
 			.query({ nameContains: 'ana', limit: 1 })
 			.expect(200)
 
 		expect(firstPage.body.users.length).toBe(1)
 
 		const secondPage = await request(app)
-			.get('/users')
+			.get('/api/users')
 			.query({ nameContains: 'ana', limit: 1, offset: 1 })
 			.expect(200)
 
@@ -243,4 +284,3 @@ describe("GET /users/", () => {
 		expect(secondPage.body.users[0].id).not.toBe(firstPage.body.users[0].id)
 	})
 })
-

@@ -2,23 +2,32 @@ import { HttpEvent, HttpHandlerFn, HttpRequest } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AuthService } from '@core/services/auth.service';
 import { API_URL } from '@core/eviroments/config.constants';
-import { catchError, Observable } from 'rxjs';
+import { catchError, Observable, throwError } from 'rxjs';
+import {NotificationService} from '@core/services/notification.service';
 
 export function loggingInterceptor(
   req: HttpRequest<unknown>,
   next: HttpHandlerFn
 ): Observable<HttpEvent<unknown>> {
   const authService = inject(AuthService);
+
+  // Prefix relative URLs with API_URL, avoiding double slashes
   if (!req.url.startsWith('http')) {
+    const path = req.url.startsWith('/') ? req.url : `/${req.url}`;
     req = req.clone({
-      url: API_URL + `${req.url}`,
+      url: `${API_URL}${path}`,
     });
   }
-  req = req.clone({
-    setHeaders: {
-      Authorization: `Bearer ${authService.token}`,
-    },
-  });
+
+  // Read token from signal and set header only if present
+  const token = authService.token();
+  if (token) {
+    req = req.clone({
+      setHeaders: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  }
   return next(req);
 }
 
@@ -28,11 +37,21 @@ export function errorCatcher(
 ): Observable<HttpEvent<unknown>> {
   return next(req).pipe(
     catchError((err) => {
+      console.log('Error intercepted:', err);
+
+      const notificationService = inject(NotificationService);
+
       if (err.status === 401) {
+        notificationService.addNotification('Session expired. Please log in again.', 4);
         const authService = inject(AuthService);
         authService.logout();
+      } else if (err.status === 500) {
+        notificationService.addNotification('Some error occurred', 4);
+      } else {
+        const errorMessage = err.error?.message || 'An error occurred';
+        notificationService.addNotification(errorMessage, 4);
       }
-      throw err;
+      return throwError(() => err);
     })
   );
 }

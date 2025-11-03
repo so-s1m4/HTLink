@@ -33,13 +33,11 @@ app.use(express.json());
 // ROUTES
 import skills from "./modules/skills/skills.routes";
 import users from "./modules/users/users.routes";
-import login from "./modules/users/users.auth.routes";
-import projectsRouter from "./modules/projects/projects.router";
+import login from "./modules/users/users.auth.routes"
 
 app.use('/', login)
 app.use('/skills', skills)
 app.use('/users', users)
-app.use('/projects', projectsRouter)
 
 
 // Additional handlers

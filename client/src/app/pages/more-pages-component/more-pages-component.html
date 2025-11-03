@@ -1,10 +1,10 @@
 @for (block of blocks; track block) {
   <app-block>
   @for (page of block; track page) {
-  <div class="item" [routerLink]="page.path">
+  <div class="item" [routerLink]="page.path" (click)="page?.click()">
     <svg [icon]="page.icon"></svg>{{page.label}}
 
-    <svg style="position: absolute; right: 0; color: var(--contrast-color)" icon="arrowRight"></svg>
+    <svg style="position: absolute; right: 0" icon="arrowRight"></svg>
   </div>
   }
   </app-block>

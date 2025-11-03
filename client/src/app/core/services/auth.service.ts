@@ -1,53 +1,36 @@
 import {Injectable, signal, WritableSignal} from '@angular/core';
-import {ProfileType} from '@app/pages/profile/data/profile.service';
+import {HttpClient} from '@angular/common/http';
+import {Router} from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   token: WritableSignal<string | null> = signal(null);
-  private me$ = signal< ProfileType | null>(null);
 
 
-  constructor() {
-    this.getMe();
+  constructor(private http: HttpClient, private router: Router) {
+    const token = localStorage.getItem('token');
+    this.token.set(token);
   }
 
-
-  private async getMe(): Promise<void> {
-    this.me$.set({
-      id: '123456',
-      name: 'Maksym Rvachov',
-      email: 'maks.rvachov.at@gmail.com',
-      class: '3A',
-      department: 'IF',
-      role: 'admin',
-      registeredAt: new Date('2022-01-01T00:00:00Z'),
-      bio: "Coder of this fucking website",
-      avatarUrl: "https://www.htlstp.ac.at/wp-content/uploads/2024/08/maus.jpeg",
-      numberOfProjects: 42,
-      numberOfFollowers: 666,
-      numberOfFollowing: 999,
-      skills: ['angular', 'typeScript', 'node.js'],
-      projects: [{
-        id: 'proj1',
-        imageUrl: "https://angular.io/assets/images/logos/angular/angular.png",
-        title: 'Awesome Project',
-        description: 'This is an awesome project.',
-        authorId: '123456',
-        createdAt: new Date('2023-01-01T00:00:00Z'),
-        updatedAt: new Date('2023-06-01T00:00:00Z'),
-        tags: ['angular', 'typescript'],
-        likes: 100,
-      }]
-    })
+  async login(data: {login: number, password: string}): Promise<void> {
+    this.http.post('/api/login', data).subscribe((response: any) => {
+      this.token.set(response.token);
+      this.router.navigate(['/more']);
+      localStorage.setItem('token', response.token);
+    });
   }
 
-
-  get me(): ProfileType | null {
-    return this.me$();
+  get isAuthed() {
+    return !!this.token();
   }
   logout(): void {
-    this.token.set(null);
+    console.log('logged out');
+    this.token.set(null)
+    localStorage.removeItem('token');
+    this.router.navigate(['/more/login']);
+    console.log('logged out 2');
+
   }
 }
