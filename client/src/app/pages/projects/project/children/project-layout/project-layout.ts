@@ -3,6 +3,8 @@ import {Router, RouterLink, RouterOutlet} from '@angular/router';
 import {SvgIconComponent} from '@shared/utils/svg.component';
 import {CommonModule} from '@angular/common';
 import {Location} from '@angular/common';
+import {Notifications} from '@shared/ui/notifications/notifications';
+import {Block} from '@shared/ui/block/block';
 
 @Component({
   selector: 'app-project-layout',
@@ -10,9 +12,12 @@ import {Location} from '@angular/common';
     RouterOutlet,
     RouterLink,
     SvgIconComponent,
-    CommonModule
+    CommonModule,
+    Notifications,
+    Block
   ],
   templateUrl: './project-layout.html',
+  standalone: true,
   styleUrl: './project-layout.css'
 })
 export class ProjectLayout implements OnInit {

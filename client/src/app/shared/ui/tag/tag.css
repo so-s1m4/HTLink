@@ -14,3 +14,14 @@
     aspect-ratio: 1/1;
   }
 }
+
+
+:host.dep {
+  background: darkgray;
+  color: var(--primary-color);
+}
+:host.role {
+  background: green;
+  color: var(--primary-color);
+  text-transform: capitalize;
+}

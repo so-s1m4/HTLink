@@ -14,16 +14,17 @@ import {ImgPipe} from '@shared/utils/img.pipe';
 
 @Component({
   selector: 'app-profile',
-    imports: [
-      Block,
-      SvgIconComponent,
-      CommonModule,
-      Tag,
-      ProjectPreview,
-      RouterLink,
-      ImgPipe,
-    ],
+  imports: [
+    Block,
+    SvgIconComponent,
+    CommonModule,
+    Tag,
+    ProjectPreview,
+    RouterLink,
+    ImgPipe,
+  ],
   templateUrl: './profile.html',
+  standalone: true,
   styleUrl: './profile.css'
 })
 export class Profile implements OnInit {
