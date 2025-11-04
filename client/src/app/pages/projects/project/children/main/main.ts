@@ -4,14 +4,17 @@ import {ProjectsService } from '@core/services/projects.service';
 import {ImageGallery} from '@shared/ui/image-gallery/image-gallery';
 import {SvgIconComponent} from '@shared/utils/svg.component';
 import {ProjectType} from '@core/types/types.constans';
+import {Block} from '@shared/ui/block/block';
 
 @Component({
   selector: 'app-main',
   imports: [
     ImageGallery,
-    SvgIconComponent
+    SvgIconComponent,
+    Block
   ],
   templateUrl: './main.html',
+  standalone: true,
   styleUrl: './main.css'
 })
 export class Main implements OnInit {

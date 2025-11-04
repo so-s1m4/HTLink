@@ -5,24 +5,42 @@
 
   <div class="header">
     <div class="action-buttons">
-      <div class="btn like"><svg icon="heart"></svg></div>
-      <div class="btn save"><svg icon="star"></svg></div>
+      <app-block class="btn like"><svg icon="heart"></svg></app-block>
+      <app-block class="btn save"><svg icon="star"></svg></app-block>
     </div>
-    <div class="members">
+    <app-block class="members" style="flex-direction: row; width: fit-content">
       <div class="avatar"></div>
       <div class="avatar"></div>
       <div class="avatar"></div>
       <div class="avatar"></div>
-    </div>
+    </app-block>
   </div>
 
-  <div class="info">
+  <app-block class="info" style="padding: 1rem 1rem">
     <h2>{{data.title}}</h2>
     <h4>{{data.description}}</h4>
-  </div>
-  <div class="links">
+  </app-block>
+  <app-block class="Links" style="grid-area: b">
+      <div class="header">
+        <svg icon="links"></svg>
+        <h3>Links</h3>
+      </div>
+      <div class="body">
+        <div class="links-holder">
+          <div class="link">
+            <svg icon="github" class="github"></svg> <a>GitHub</a>
+          </div>
+        </div>
+      </div>
+    </app-block>
+  <app-block class="ReadMe" style="grid-area: b">
+      <div class="header">
+        <svg icon="book"></svg>
+        <h3>ReadMe</h3>
+      </div>
+      <div class="body">
 
-  </div>
-  <div class="description">{{data.text}}</div>
+      </div>
+    </app-block>
 }
 
