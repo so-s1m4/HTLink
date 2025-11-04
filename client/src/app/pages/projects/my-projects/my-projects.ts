@@ -12,6 +12,7 @@ import {ProjectType} from '@core/types/types.constans';
     SvgIconComponent
   ],
   templateUrl: './my-projects.html',
+  standalone: true,
   styleUrl: './my-projects.css'
 })
 export class MyProjects implements OnInit {

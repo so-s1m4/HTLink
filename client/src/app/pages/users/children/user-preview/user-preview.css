@@ -1,0 +1,36 @@
+.UserPreview {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+
+  flex-direction: row;
+}
+
+
+.img.avatar {
+  height: 5rem;
+  width: 5rem;
+
+  img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+    border-radius: 50%;
+  }
+}
+
+.tags {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+
+  height: fit-content;
+  width: 100%;
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}

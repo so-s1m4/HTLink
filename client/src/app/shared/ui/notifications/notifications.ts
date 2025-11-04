@@ -9,6 +9,7 @@ import {NotificationService} from '@core/services/notification.service';
     CommonModule
   ],
   templateUrl: './notifications.html',
+  standalone: true,
   styleUrl: './notifications.css'
 })
 export class Notifications {

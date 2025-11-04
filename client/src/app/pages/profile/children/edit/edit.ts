@@ -9,6 +9,8 @@ import {ProfileService} from '@core/services/profile.service';
 import {ImgPipe} from '@shared/utils/img.pipe';
 import {Tag} from '@shared/ui/tag/tag';
 import {MainService} from '@core/services/main.service';
+import {NotificationService} from '@core/services/notification.service';
+import {AppSelectComponent} from '@shared/ui/select/select';
 
 @Component({
   selector: 'app-edit',
@@ -18,7 +20,8 @@ import {MainService} from '@core/services/main.service';
     RouterLink,
     ReactiveFormsModule,
     CommonModule,
-    Tag
+    Tag,
+    AppSelectComponent
   ],
   templateUrl: './edit.html',
   styleUrl: './edit.css'
@@ -37,6 +40,7 @@ export class Edit implements OnInit {
   }
 
   private mainService = inject(MainService);
+  private nService = inject(NotificationService);
 
 
   profileForm = new FormGroup({
@@ -72,9 +76,12 @@ export class Edit implements OnInit {
     this.profileForm.patchValue({skills: newSkills.filter((s: TagType) => s.id !== skill.id)});
   }
 
-  addSkill($event: Event) {
-    const input = $event.target as HTMLInputElement;
-    const value = input.value;
+  addSkill($event: {
+    target: {
+      value: string | number | null;
+    };
+  }) {
+    const value = $event.target.value;
 
     const skill = this.skills.find(s => s.id === value);
     if (skill) {
@@ -83,6 +90,9 @@ export class Edit implements OnInit {
         this.profileForm.patchValue({skills: [...currentSkills, skill]});
       }
     }
-    input.value = '';
+  }
+
+  toOptions(skills: TagType[]) {
+    return skills.map(i=>({label: i.name, value: i.id}));
   }
 }

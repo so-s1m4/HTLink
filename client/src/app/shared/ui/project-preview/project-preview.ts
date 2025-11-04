@@ -6,14 +6,15 @@ import {Router} from '@angular/router';
 import {ProjectType} from '@core/types/types.constans';
 
 @Component({
-  selector: 'app-project-preview',
-  imports: [
-    Block,
-    SvgIconComponent,
-    Tag
-  ],
-  templateUrl: './project-preview.html',
-  styleUrl: './project-preview.css'
+    selector: 'app-project-preview',
+    imports: [
+        Block,
+        SvgIconComponent,
+        Tag
+    ],
+    templateUrl: './project-preview.html',
+    standalone: true,
+    styleUrl: './project-preview.css'
 })
 export class ProjectPreview {
   router = inject(Router);

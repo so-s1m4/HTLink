@@ -1,5 +1,5 @@
 @if (data && data.user()) {
-<app-block class="Main-Info">
+<app-block class="Main-Info" style="grid-area: a">
   <div class="header">
     <div class="banner"></div>
     <div class="action-btns"></div>
@@ -9,8 +9,9 @@
   <div class="body">
     <div class="name"><p style="font-size: 18px">{{data.user().first_name}} {{data.user().last_name?.slice(0,1)}}.</p></div>
     <div class="tags">
-      <app-tag>{{data.user().class}}</app-tag>
-      <div class="tag departement">{{data.user().department}}</div>
+      <app-tag type="class">{{data.user().class}}</app-tag>
+      <app-tag type="department">{{data.user().department}}</app-tag>
+      <app-tag type="role">{{data.user().role}}</app-tag>
     </div>
     <div class="blocks">
       <div class="block-item">
@@ -36,7 +37,25 @@
     </div>
   </div>
 </app-block>
-<app-block class="Skill-Set">
+<app-block class="Links" *ngIf="data.user().github_link || data.user().linkedin_link" style="grid-area: b">
+  <div class="header">
+    <svg icon="links"></svg>
+    <h3>Links</h3>
+  </div>
+  <div class="body">
+    <div class="links-holder">
+      <div class="link" *ngIf="data.user().github_link">
+        <svg icon="github" class="github"></svg> <a [href]="data.user().github_link">GitHub</a>
+      </div>
+      <div class="link" *ngIf="data.user().linkedin_link">
+        <svg icon="linkedin" class="linkedin"></svg> <a [href]="data.user().linkedin_link">LinkedIn</a>
+      </div>
+    </div>
+  </div>
+</app-block>
+
+
+<app-block class="Skill-Set" style="grid-area: c">
     <div class="header">
       <svg icon="code"></svg>
       <h3>Skills</h3>
@@ -49,7 +68,7 @@
       </div>
     </div>
 </app-block>
-<app-block class="Projects-List">
+<app-block class="Projects-List" style="grid-area: d">
   <div class="header">
     <svg icon="projects"></svg>
     <h3>Projects</h3>

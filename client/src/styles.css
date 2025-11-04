@@ -128,6 +128,8 @@ svg * {
 }
 
 .btn:hover {
+
+  border-radius: 1rem;
   background: transparent;
   color: var(--hover-gray-color);
 
@@ -235,6 +237,11 @@ svg * {
     text-shadow: 1px 1px 1px var(--contrast-color);
 
   }
+}
+
+a {
+  text-decoration: underline;
+  color: var(--contrast-color);
 }
 
 h1,h2,h3,h4,h5,h6 {

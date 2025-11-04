@@ -35,16 +35,18 @@ export function errorCatcher(
   req: HttpRequest<unknown>,
   next: HttpHandlerFn
 ): Observable<HttpEvent<unknown>> {
+
+  const notificationService = inject(NotificationService);
+  const authService = inject(AuthService);
+
+
   return next(req).pipe(
     catchError((err) => {
-      console.log('Error intercepted:', err);
-
-      const notificationService = inject(NotificationService);
-
       if (err.status === 401) {
         notificationService.addNotification('Session expired. Please log in again.', 4);
-        const authService = inject(AuthService);
         authService.logout();
+      } else if (err.status === 403) {
+
       } else if (err.status === 500) {
         notificationService.addNotification('Some error occurred', 4);
       } else {
