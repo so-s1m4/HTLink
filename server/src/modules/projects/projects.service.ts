@@ -216,7 +216,32 @@ export default class ProjectsService {
         if (!project) {
             throw new ErrorWithStatus(404, "Project not found");
         }
-        return mapProjectToFullDto(project)
+        const finishedProject = await Project.findById(project._id).populate<{images: IImage[]}>("images").populate<{skills: ISkill[]}>("skills").populate<{categoryId: ICategory}>("categoryId")
+
+        if (!finishedProject) {
+            throw new ErrorWithStatus(404, "Project not found");
+        }
+
+        return {
+            id: finishedProject.id.toString(),
+            title: finishedProject.title,
+            category: {
+                id: finishedProject.categoryId._id.toString(),
+                name: finishedProject.categoryId.name
+            },
+            shortDescription: finishedProject.shortDescription,
+            fullReadme: finishedProject.fullReadme,
+            deadline: finishedProject.deadline,
+            ownerId: finishedProject.ownerId.toString(),
+            status: finishedProject.status,
+            skills: finishedProject.skills?.map((skill: ISkill) => ({id: skill._id.toString(), name: skill.name})) ?? [],
+            images: finishedProject.images?.map((img: IImage) => ({
+                id: img._id.toString(),
+                image_path: img.image_path,
+            })) ?? [],
+            createdAt: finishedProject.createdAt,
+            updatedAt: finishedProject.updatedAt,
+        }
 
     }
 

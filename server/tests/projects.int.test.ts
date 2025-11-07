@@ -93,7 +93,7 @@ async function ensureProjectExists(base: ReturnType<typeof makeCreateProjectPayl
 
         const res = await createProjectRequest(payload, token);
         expect(res.status).toBe(201);
-        projectId = res.body.project._id;
+        projectId = res.body.project.id;
     } else {
         projectId = existingData._id.toString();
     }
@@ -180,24 +180,25 @@ describe("Create new project", () => {
     });
 })
 
-// describe("get project by id and by owner id", () => {
-//     it("should return project by id", async () => {
-//         const base = makeCreateProjectPayload();
-//         await ensureProjectExists(base);
-//         const res = await request(app).get(`/api/api/projects/${projectId}`).expect(200);
-//         expect(res.body.project._id).toBe(projectId);
-//         expect(res.body.project.title).toBe(base.title);
-//         expect(res.body.project.shortDescription).toBe(base.shortDescription);
-//         expect(res.body.project.fullReadme).toBe(base.fullReadme);
-//         expect(new Date(res.body.project.deadline).toISOString()).toBe(base.deadline);
-//         expect(res.body.project.ownerId).toBeDefined();
-//         expect(res.body.project.status).toBe(ProjectStatus.PLANNED);
-//     })
+describe("get project by id", () => {
+    it("should return project by id", async () => {
+        const base = makeCreateProjectPayload();
+        await ensureProjectExists(base);
 
-//     it('should return 400 if id is not valid', async() => {
-//         const res = await request(app).get('/api/api/projects/123').expect(400);
-//     });
-// })
+        const res = await request(app).get(`/api/projects/${projectId}`).set('Authorization', `Bearer ${token}`).expect(200);
+        expect(res.body.project.id).toBe(projectId);
+        expect(res.body.project.title).toBe(base.title);
+        expect(res.body.project.shortDescription).toBe(base.shortDescription);
+        expect(res.body.project.fullReadme).toBe(base.fullReadme);
+        expect(new Date(res.body.project.deadline).toISOString()).toBe(base.deadline);
+        expect(res.body.project.ownerId).toBeDefined();
+        expect(res.body.project.status).toBe(ProjectStatus.PLANNED);
+    })
+
+    it('should return 400 if id is not valid', async() => {
+        const res = await request(app).get('/api/projects/123').set('Authorization', `Bearer ${token}`).expect(400);
+    });
+})
 // //
 // // describe("update project", () => {
 // //     it("should update project by id", async () => {
@@ -312,7 +313,6 @@ describe("List projects", () => {
 
         const bothSkills = [s1?._id.toString(), s2?._id.toString()];
         await createProjectWith({ title: "Both Skills", skills: bothSkills });
-        console.log([s1?._id.toString()])
         await createProjectWith({ title: "Only One", skills: [s1?._id.toString()] });
 
          const res = await request(app)
@@ -322,6 +322,7 @@ describe("List projects", () => {
             .expect(200);
         expect(res.body.total).toBe(1);
         expect(res.body.items[0].title).toBe("Both Skills");
+        expect(res.body.items[0].images.length).toBe(2);
     });
 
     it("should support pagination via page and limit", async () => {
@@ -373,4 +374,3 @@ describe("List projects", () => {
         expect(res.body.items[0].title).toBe("Unique Searchable Title");
       });
 });
-
