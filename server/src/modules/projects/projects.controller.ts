@@ -91,26 +91,23 @@ export default class ProjectsController{
     // }
 
     static async updateProject(req: Request, res: Response, next: NextFunction) {
-        
-                
-    }
 
+        const body = { ...req.body };
+        if (body.skills !== undefined) {
+            body.skills = Array.isArray(body.skills) ? body.skills : [body.skills];
+        }
 
-    static async updateStatus(req: Request, res: Response, next: NextFunction) {
-        const dto = validationWrapper(statusSchema, req.body);
+        const dto = validationWrapper(updateProjectSchema, body);
+        const userId =  res.locals?.user?.userId;
+
         const projectId = req.params.id;
         if (!projectId) throw new ErrorWithStatus(400, "Project ID is required");
-        const updatedProject = await ProjectsService.updateStatus(projectId, dto.status);
-        res.status(200).json({ project: updatedProject });
-                
+
+        const project = await  ProjectsService.updateProject(projectId, dto, userId);
+        res.status(200).json({ project });
+
     }
 
-    static async updateProject2(req: Request, res: Response, next: NextFunction) {
-        const raw = typeof req.body?.data === 'string' ? JSON.parse(req.body.data) : req.body.data;
-        const dto = validationWrapper(updateProjectSchema, raw);
-        const projectId = req.params.id;
-        if (!projectId) throw new ErrorWithStatus(400, "Project ID is required");
-        const updatedProject = await ProjectsService.updateProject(projectId, dto);
-        res.status(200).json({ project: updatedProject });
-    }
+
+
 }

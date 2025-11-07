@@ -6,8 +6,11 @@ import mongoose, { HydratedDocument } from "mongoose";
 import { fetchCategoryOrFail, fetchSkillsOrFail, mapProjectToFullDto, toObjectId } from "./utils/project.helpers";
 import { IImage, Image } from "./images/image.model";
 import { UpdateProjectDto } from "./dto/update.project.dto";
-import { ISkill } from "../skills/skills.model";
+import {ISkill, Skill} from "../skills/skills.model";
 import { Category, ICategory } from "../categories/category.model";
+import {User} from "../users/users.model";
+import deleteFile from "../../common/utils/utils.deleteFile";
+import UserMapper from "../users/users.mappers";
 
 // helpers moved to ./utils/project.helpers
 
@@ -256,23 +259,56 @@ export default class ProjectsService {
     //     return mapProjectToFullDto(project)
     // }
 
-    static async updateProject(projectId: string, updateProjectDto: UpdateProjectDto) {
-        console.log(
-            "updateProjectDto",
-            updateProjectDto
-        )
+    static async updateProject(projectId: string, updateProjectDto: UpdateProjectDto, userId: string) {
+
         if (!mongoose.Types.ObjectId.isValid(projectId)) {
             throw new ErrorWithStatus(400, "Invalid project id");
         }
-        const updatedProject = await Project.findByIdAndUpdate(projectId, { $set: updateProjectDto }, { new: true, runValidators: true, context: "query" });
+
+
+        const project = await Project.findById(projectId);
+        if (!project) {
+            throw new ErrorWithStatus(404, "Project not found");
+        }
+        if (userId !== project.ownerId.toString()) {
+            throw new ErrorWithStatus(403, "Forbidden");
+        }
+        const updatedProject = await Project.findByIdAndUpdate(
+            projectId,
+            { $set: updateProjectDto },
+            { new: true, runValidators: true, context: "query" }
+        );
+
         if (!updatedProject) {
             throw new ErrorWithStatus(404, "Project not found");
         }
-        console.log(
-            "updatedProject",
-            updatedProject
-        )
-        return mapProjectToFullDto(updatedProject);
+
+        const finishedProject = await Project.findById(updatedProject._id).populate<{images: IImage[]}>("images").populate<{skills: ISkill[]}>("skills").populate<{categoryId: ICategory}>("categoryId")
+
+        if (!finishedProject) {
+            throw new ErrorWithStatus(404, "Project not found");
+        }
+
+        return {
+            id: finishedProject.id.toString(),
+            title: finishedProject.title,
+            category: {
+                id: finishedProject.categoryId._id.toString(),
+                name: finishedProject.categoryId.name
+            },
+            shortDescription: finishedProject.shortDescription,
+            fullReadme: finishedProject.fullReadme,
+            deadline: finishedProject.deadline,
+            ownerId: finishedProject.ownerId.toString(),
+            status: finishedProject.status,
+            skills: finishedProject.skills?.map((skill: ISkill) => ({id: skill._id.toString(), name: skill.name})) ?? [],
+            images: finishedProject.images?.map((img: IImage) => ({
+                id: img._id.toString(),
+                image_path: img.image_path,
+            })) ?? [],
+            createdAt: finishedProject.createdAt,
+            updatedAt: finishedProject.updatedAt,
+        }
     }
 
     static async deleteProject(projectId: string, userId: string) {

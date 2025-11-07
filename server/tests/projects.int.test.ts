@@ -374,3 +374,79 @@ describe("List projects", () => {
         expect(res.body.items[0].title).toBe("Unique Searchable Title");
       });
 });
+
+describe("Update project (PATCH /:id/update)", () => {
+    it("should successfully update all project fields", async () => {
+        const base = makeCreateProjectPayload();
+        await ensureProjectExists(base);
+
+        const newCategory = await Category.findOne({ name: "Mobile development" });
+        const newSkills = await Skill.find({ name: { $in: ["Python", "Angular"] } });
+        const newSkillIds = newSkills.map(s => s._id.toString());
+        const newDeadline = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
+
+        const updateData = {
+            title: "Updated Project Title",
+            categoryId: newCategory?._id.toString(),
+            shortDescription: "This is an updated short description for the project.",
+            fullReadme: "# Updated Readme\n\nThis is the updated full readme content.",
+            deadline: newDeadline,
+            status: ProjectStatus.IN_PROGRESS,
+            skills: newSkillIds,
+        };
+
+        const res = await request(app)
+            .patch(`/api/projects/${projectId}/update`)
+            .send(updateData)
+            .set('Authorization', `Bearer ${token}`)
+            .expect(200);
+
+        expect(res.body.project).toBeDefined();
+        expect(res.body.project.title).toBe(updateData.title);
+        expect(res.body.project.shortDescription).toBe(updateData.shortDescription);
+        expect(res.body.project.fullReadme).toBe(updateData.fullReadme);
+        expect(new Date(res.body.project.deadline).toISOString()).toBe(newDeadline);
+        expect(res.body.project.status).toBe(ProjectStatus.IN_PROGRESS);
+        expect(res.body.project.skills.length).toBe(newSkillIds.length);
+    });
+
+    it("should return 400 if validation fails", async () => {
+        const base = makeCreateProjectPayload();
+        await ensureProjectExists(base);
+
+        const updateData = {
+            title: "AB",
+        };
+
+        await request(app)
+            .patch(`/api/projects/${projectId}/update`)
+            .send(updateData)
+            .set('Authorization', `Bearer ${token}`)
+            .expect(400);
+    });
+
+    it("should return 404 if project does not exist", async () => {
+        const nonExistentId = new mongoose.Types.ObjectId().toString();
+
+        const category = await Category.findOne({ name: "Web development" });
+        const skills = await Skill.find({ name: { $in: ["Express Js"] } });
+        const skillIds = skills.map(s => s._id.toString());
+
+        const updateData = {
+            title: "Test Title",
+            categoryId: category?._id.toString(),
+            shortDescription: "Short description here",
+            fullReadme: "Full readme here",
+            deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+            status: ProjectStatus.PLANNED,
+            skills: skillIds,
+        };
+
+        await request(app)
+            .patch(`/api/projects/${nonExistentId}/update`)
+            .send(updateData)
+            .set('Authorization', `Bearer ${token}`)
+            .expect(404);
+    });
+});
+
