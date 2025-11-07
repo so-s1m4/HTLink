@@ -9,8 +9,9 @@ import { updateProjectSchema } from "./dto/update.project.dto";
 
 export default class ProjectsController{
 
+
     static async createProject(req: Request, res: Response, next: NextFunction) {
-        // Normalize skills to array for multipart form data
+
         const body = { ...req.body };
         if (body.skills !== undefined) {
             body.skills = Array.isArray(body.skills) ? body.skills : [body.skills];
@@ -78,17 +79,14 @@ export default class ProjectsController{
                 
     }
 
-    // static async getMyProjects(req: Request, res: Response, next: NextFunction) {
-    //             
-    //         const ownerId = res.locals.user.userId;
-    //         if (!ownerId) throw new ErrorWithStatus(400, "Owner ID is required");
-    //         const project = await ProjectsService.getProjectByOwnerId(ownerId);
-    //         res.status(200).json({ project });
-    //     }
-    //     catch (err) {
-    //         next(err);
-    //     }
-    // }
+    static async getMyProjects(req: Request, res: Response, next: NextFunction) {
+
+            const ownerId = res.locals.user.userId;
+            if (!ownerId) throw new ErrorWithStatus(400, "Owner ID is required");
+            const project = await ProjectsService.getProjectByOwnerId(ownerId);
+            res.status(200).json({ project });
+
+    }
 
     static async updateProject(req: Request, res: Response, next: NextFunction) {
 
@@ -106,6 +104,14 @@ export default class ProjectsController{
         const project = await  ProjectsService.updateProject(projectId, dto, userId);
         res.status(200).json({ project });
 
+    }
+
+    static async deleteProject(req: Request, res: Response, next: NextFunction) {
+        const user = res.locals?.user;
+        const projectId = req.params.id;
+        if (!projectId) throw new ErrorWithStatus(400, "Project ID is required");
+        await ProjectsService.deleteProject(projectId, user?.userId);
+        res.status(200).json({ message: "Project deleted successfully" });
     }
 
 

@@ -8,29 +8,10 @@ import { IImage, Image } from "./images/image.model";
 import { UpdateProjectDto } from "./dto/update.project.dto";
 import {ISkill, Skill} from "../skills/skills.model";
 import { Category, ICategory } from "../categories/category.model";
-import {User} from "../users/users.model";
-import deleteFile from "../../common/utils/utils.deleteFile";
-import UserMapper from "../users/users.mappers";
+
 
 // helpers moved to ./utils/project.helpers
 
-export type PublicProjectDetailed = {
-    id: string;
-    title: string;
-    category: string;
-    shortDescription: string;
-    fullReadme: string;
-    deadline: Date;
-    ownerId: string;
-    status: ProjectStatus;
-    skills: Array<{ id: string, name: string }>;
-    images: Array<{
-        id: string;
-        image_path: string;
-    }>;
-    createdAt: Date;
-    updatedAt: Date;
-};
 
 export default class ProjectsService {
     static async createProject(project: CreateProjectDto, ownerId:string, files: Express.Multer.File[] = []) {
@@ -180,7 +161,6 @@ export default class ProjectsService {
             };
         });
 
-        // Filter out any null items (shouldn't happen, but defensive)
         const validItems = items.filter((item): item is NonNullable<typeof item> => item !== null);
 
         return {
@@ -192,22 +172,7 @@ export default class ProjectsService {
         };
     }
 
-    static async updateStatus(projectId: string, status: ProjectStatus) {
-        if (!projectId || !mongoose.Types.ObjectId.isValid(projectId)) {
-            throw new ErrorWithStatus(400, "Invalid project id");
-        }
-        const project = await Project.findByIdAndUpdate(
-          projectId,
-          { $set: { status } },
-          { new: true, runValidators: true, context: "query" }
-        );
-        if (!project) {
-            throw new ErrorWithStatus(404, "Project not found");
-        }
 
-        //TODO: add images to the response
-        return mapProjectToFullDto(project);
-    }
 
     static async getProjectById(projectId: string) {
 
@@ -248,16 +213,45 @@ export default class ProjectsService {
 
     }
 
-    // static async getProjectByOwnerId(ownerId: string) {
-    //     if (!mongoose.Types.ObjectId.isValid(ownerId)) {
-    //         throw new ErrorWithStatus(400, "Invalid owner id");
-    //     }
-    //     const project = await Project.findOne({ ownerId: ownerId })
-    //     if (!project) {
-    //         throw new ErrorWithStatus(404, "Project not found");
-    //     }
-    //     return mapProjectToFullDto(project)
-    // }
+    static async getProjectByOwnerId(ownerId: string) {
+        if (!mongoose.Types.ObjectId.isValid(ownerId)) {
+            throw new ErrorWithStatus(400, "Invalid owner id");
+        }
+
+        const projects = await Project.find({ ownerId: ownerId })
+            .populate<{images: IImage[]}>("images")
+            .populate<{skills: ISkill[]}>("skills")
+            .populate<{categoryId: ICategory}>("categoryId")
+            .sort({ createdAt: -1 });
+
+        if (!projects || projects.length === 0) {
+            return [];
+        }
+
+        return projects.map((project) => ({
+            id: project.id.toString(),
+            title: project.title,
+            category: {
+                id: project.categoryId._id.toString(),
+                name: project.categoryId.name
+            },
+            shortDescription: project.shortDescription,
+            fullReadme: project.fullReadme,
+            deadline: project.deadline,
+            ownerId: project.ownerId.toString(),
+            status: project.status,
+            skills: project.skills?.map((skill: ISkill) => ({
+                id: skill._id.toString(),
+                name: skill.name
+            })) ?? [],
+            images: project.images?.map((img: IImage) => ({
+                id: img._id.toString(),
+                image_path: img.image_path,
+            })) ?? [],
+            createdAt: project.createdAt,
+            updatedAt: project.updatedAt,
+        }));
+    }
 
     static async updateProject(projectId: string, updateProjectDto: UpdateProjectDto, userId: string) {
 

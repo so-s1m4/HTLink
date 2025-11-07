@@ -26,7 +26,7 @@ let token: string
 export function makeCreateProjectPayload(overrides: Record<string, any> = {}) {
     const oneWeekFromNowIso = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
-    // Ensure unique title per call to avoid cross-test interference
+
     const uniqueSuffix = Math.random().toString(36).slice(2, 6);
 
     const base = {
@@ -41,7 +41,6 @@ export function makeCreateProjectPayload(overrides: Record<string, any> = {}) {
     return { ...base, ...overrides };
 }
 
-// Helper function to prepare project payload with category and skills
 async function prepareProjectPayload(base: ReturnType<typeof makeCreateProjectPayload>, overrides?: any) {
     const category = await Category.findOne({ name: base.category });
     const skills = await Skill.find({ name: { $in: base.skills } });
@@ -54,8 +53,7 @@ async function prepareProjectPayload(base: ReturnType<typeof makeCreateProjectPa
         skills: skillIds,
         ...overrides,
     };
-    // console.log(payload.skills)
-    // console.log(skillIds)
+
 
 
     return { payload, skillIds, categoryId: category?._id.toString() || '' };
@@ -287,23 +285,6 @@ describe("List projects", () => {
         expect(res.body.items[0].title).toBe("Mobile App");
     });
 
-    // it("should filter by status (case-insensitive)", async () => {
-    //     await Project.deleteMany({});
-    //     const created = await createProjectWith({ title: "Status Change" });
-    //     await request(app)
-    //         .patch(`/api/projects/${created._id}/update_status`)
-    //         .send({ status: ProjectStatus.IN_PROGRESS })
-    //         .expect(200);
-    //
-    //     await createProjectWith({ title: "Still Planned" });
-    //
-    //     const res = await request(app)
-    //         .get("/api/projects")
-    //         .query({ status: "in progress" })
-    //         .expect(200);
-    //     expect(res.body.total).toBe(1);
-    //     expect(res.body.items[0].status).toBe(ProjectStatus.IN_PROGRESS);
-    // });
 
     it("should filter by skills (requires all)", async () => {
         await Project.deleteMany({});
@@ -415,7 +396,8 @@ describe("Update project (PATCH /:id/update)", () => {
         await ensureProjectExists(base);
 
         const updateData = {
-            title: "AB",
+            title: "AB", // Too short (min 3)
+            // Missing required fields
         };
 
         await request(app)
@@ -450,3 +432,132 @@ describe("Update project (PATCH /:id/update)", () => {
     });
 });
 
+describe("Get my projects (GET /my_projects)", () => {
+    it("should return all projects owned by the authenticated user", async () => {
+        await Project.deleteMany({});
+
+        const base1 = makeCreateProjectPayload({ title: "My Project 1" });
+        const base2 = makeCreateProjectPayload({ title: "My Project 2" });
+        const base3 = makeCreateProjectPayload({ title: "My Project 3" });
+
+        const { payload: payload1 } = await prepareProjectPayload(base1);
+        const { payload: payload2 } = await prepareProjectPayload(base2);
+        const { payload: payload3 } = await prepareProjectPayload(base3);
+
+        await createProjectRequest(payload1, token);
+        await createProjectRequest(payload2, token);
+        await createProjectRequest(payload3, token);
+
+        const res = await request(app)
+            .get("/api/projects/my_projects")
+            .set('Authorization', `Bearer ${token}`)
+            .expect(200);
+
+        expect(res.body.project).toBeDefined();
+        expect(Array.isArray(res.body.project)).toBe(true);
+        expect(res.body.project.length).toBe(3);
+
+        res.body.project.forEach((proj: any) => {
+            expect(proj.ownerId).toBe(id);
+            expect(proj).toHaveProperty('id');
+            expect(proj).toHaveProperty('title');
+            expect(proj).toHaveProperty('category');
+            expect(proj).toHaveProperty('skills');
+            expect(proj).toHaveProperty('images');
+        });
+
+        // Check titles are present
+        const titles = res.body.project.map((p: any) => p.title);
+        expect(titles).toContain(base1.title);
+        expect(titles).toContain(base2.title);
+        expect(titles).toContain(base3.title);
+    });
+
+    it("should return empty array when user has no projects", async () => {
+        await Project.deleteMany({});
+
+        const res = await request(app)
+            .get("/api/projects/my_projects")
+            .set('Authorization', `Bearer ${token}`)
+            .expect(200);
+
+        expect(res.body.project).toBeDefined();
+        expect(Array.isArray(res.body.project)).toBe(true);
+        expect(res.body.project.length).toBe(0);
+    });
+
+    it("should return 401 if user is not authenticated", async () => {
+        await request(app)
+            .get("/api/projects/my_projects")
+            .expect(401);
+    });
+});
+
+describe("Delete project (DELETE /:id)", () => {
+    it("should successfully delete a project owned by the user", async () => {
+        const base = makeCreateProjectPayload();
+        await ensureProjectExists(base);
+
+        // Verify project exists
+        const existsBefore = await Project.findById(projectId);
+        expect(existsBefore).toBeTruthy();
+
+        const res = await request(app)
+            .delete(`/api/projects/${projectId}`)
+            .set('Authorization', `Bearer ${token}`)
+            .expect(200);
+
+        expect(res.body.message).toBe("Project deleted successfully");
+
+        const existsAfter = await Project.findById(projectId);
+        expect(existsAfter).toBeNull();
+    });
+
+    it("should return 403 if user tries to delete project they don't own", async () => {
+        const base = makeCreateProjectPayload();
+        await ensureProjectExists(base);
+
+        const anotherUser = await User.create({
+            pc_number: "20220999",
+            first_name: "Another",
+            last_name: "User",
+        });
+
+        const anotherToken = jwt.sign({ userId: anotherUser._id.toString() }, config.JWT_SECRET, {
+            expiresIn: "14d",
+        });
+
+        await request(app)
+            .delete(`/api/projects/${projectId}`)
+            .set('Authorization', `Bearer ${anotherToken}`)
+            .expect(403);
+
+        const stillExists = await Project.findById(projectId);
+        expect(stillExists).toBeTruthy();
+    });
+
+    it("should return 404 if project does not exist", async () => {
+        const nonExistentId = new mongoose.Types.ObjectId().toString();
+
+        await request(app)
+            .delete(`/api/projects/${nonExistentId}`)
+            .set('Authorization', `Bearer ${token}`)
+            .expect(404);
+    });
+
+    it("should return 400 if project id is invalid", async () => {
+        await request(app)
+            .delete(`/api/projects/invalid-id`)
+            .set('Authorization', `Bearer ${token}`)
+            .expect(400);
+    });
+
+    it("should return 401 if user is not authenticated", async () => {
+        const base = makeCreateProjectPayload();
+        await ensureProjectExists(base);
+
+        await request(app)
+            .delete(`/api/projects/${projectId}`)
+            .expect(401);
+    });
+});
