@@ -15,6 +15,7 @@ import jwt from "jsonwebtoken";
 import {config} from "../src/config/config";
 import isPhotoExist from "../src/common/utils/utils.isPhotoExist";
 import deleteFile from "../src/common/utils/utils.deleteFile";
+import {ProjectPreviewCardDto} from "../src/modules/projects/dto/project.preview.card.dto";
 
 let projectId: string
 let mongo: MongoMemoryServer;
@@ -61,15 +62,25 @@ async function prepareProjectPayload(base: ReturnType<typeof makeCreateProjectPa
 }
 
 async function createProjectRequest(payload: any, token:string) {
-    return request(app)
+    const req = request(app)
         .post("/api/projects")
         .field("title", payload.title)
         .field("categoryId", payload.categoryId)
         .field("shortDescription", payload.shortDescription)
         .field("fullReadme", payload.fullReadme)
         .field("deadline", payload.deadline)
-        .field("skills", payload.skills)
-        .set('Authorization', `Bearer ${token}`)
+        .set('Authorization', `Bearer ${token}`);
+    
+    // Handle skills array properly for multipart form data
+    if (Array.isArray(payload.skills)) {
+        payload.skills.forEach((skill: string) => {
+            req.field("skills", skill);
+        });
+    } else {
+        req.field("skills", payload.skills);
+    }
+    
+    return req
         .attach("image", path.join(__dirname, "public/test.png"))
         .attach("image", path.join(__dirname, "public/test_copy.png"));
 
@@ -104,13 +115,6 @@ afterAll(async () => {
     await mongo.stop();
 });
 
-async function getAuthToken() {
-    const token = await request(app)
-        .post('/login')
-        .send({login: '20220467', password: 'mypass'});
-    return token.body.token;
-}
-
 beforeEach(async () => {
     const user = await User.create({
         pc_number: pc_number,
@@ -138,31 +142,30 @@ describe("Create new project", () => {
         const res = await createProjectRequest(payload, token);
         expect(res.status).toBe(201);
 
-        projectId = res.body.id;
-    
+
         expect(res.status).toBe(201);  
-        expect(res.body).toHaveProperty("id");
-        expect(res.body.title).toBe(base.title);
-        expect(res.body.category.name).toBe(base.category);
-        expect(res.body.shortDescription).toBe(base.shortDescription);
-        expect(res.body.fullReadme).toBe(base.fullReadme);
-        expect(new Date(res.body.deadline).toISOString()).toBe(base.deadline);
-        expect(res.body.skills.map((skill: any) => skill.name).sort()).toEqual(base.skills.sort());
-        expect(res.body.ownerId).toBe(id);
-        expect(res.body.status).toBe(ProjectStatus.PLANNED);
+        expect(res.body.project).toHaveProperty("id");
+        expect(res.body.project.title).toBe(base.title);
+        expect(res.body.project.category.name).toBe(base.category);
+        expect(res.body.project.shortDescription).toBe(base.shortDescription);
+        expect(res.body.project.fullReadme).toBe(base.fullReadme);
+        expect(new Date(res.body.project.deadline).toISOString()).toBe(base.deadline);
+        expect(res.body.project.skills.map((skill: any) => skill.name).sort()).toEqual(base.skills.sort());
+        expect(res.body.project.ownerId).toBe(id);
+        expect(res.body.project.status).toBe(ProjectStatus.PLANNED);
 
         // check images
-        expect(res.body.images).toHaveLength(2);
-        expect(isPhotoExist(res.body.images[0].image_path)).toBe(true);
-        await deleteFile(res.body.images[0].image_path)
-        expect(isPhotoExist(res.body.images[1].image_path)).toBe(true);
-        await deleteFile(res.body.images[1].image_path)
+        expect(res.body.project.images).toHaveLength(2);
+        expect(isPhotoExist(res.body.project.images[0].image_path)).toBe(true);
+        await deleteFile(res.body.project.images[0].image_path)
+        expect(isPhotoExist(res.body.project.images[1].image_path)).toBe(true);
+        await deleteFile(res.body.project.images[1].image_path)
       })
 
       
       it("should return 400 if the payload is invalid", async () => {
         const base = makeCreateProjectPayload();
-        const { payload } = await prepareProjectPayload(base, { deadline: "not a date" });
+        const { payload } = await prepareProjectPayload(base, { deadline: "ff" });
 
         const res = await createProjectRequest(payload, token);
         expect(res.status).toBe(400);
@@ -221,143 +224,153 @@ describe("Create new project", () => {
 // //     })
 // // })
 
-// describe("List projects", () => {
-//     async function createProjectWith(overrides: Record<string, any> = {}) {
-//         const base = makeCreateProjectPayload(overrides.title ? { title: overrides.title } : {});
-//         const { payload } = await prepareProjectPayload(base, overrides);
-//         const res = await createProjectRequest(payload, token);
-//         expect(res.status).toBe(201);
-//         return res.body.project;
-//     }
+describe("List projects", () => {
+    async function createProjectWith(overrides: Record<string, any> = {}) {
+        const base = makeCreateProjectPayload(overrides.title ? { title: overrides.title } : {});
+        const { payload } = await prepareProjectPayload(base, overrides);
+        const res = await createProjectRequest(payload, token);
+        expect(res.status).toBe(201);
+        return res.body.project;
+    }
 
-//     it("should list projects with defaults and correct pagination", async () => {
-//         await Project.deleteMany({});
-//         const p1 = await createProjectWith({ title: "Alpha Project" });
-//         const p2 = await createProjectWith({ title: "Beta Project" });
-//         const p3 = await createProjectWith({ title: "Gamma Project" });
+    it("should list projects with defaults and correct pagination", async () => {
+        await Project.deleteMany({});
+        const p1 = await createProjectWith({ title: "Alpha Project" });
+        const p2 = await createProjectWith({ title: "Beta Project" });
+        const p3 = await createProjectWith({ title: "Gamma Project" });
 
-//         const res = await request(app).get("/api/api/projects").expect(200);
-//         expect(Array.isArray(res.body.items)).toBe(true);
-//         expect(res.body.total).toBe(3);
-//         expect(res.body.page).toBe(1);
-//         expect(res.body.limit).toBe(10);
-//         expect(res.body.totalPages).toBe(1);
-//         const titles = res.body.items.map((i: any) => i.title).sort();
-//         expect(titles).toEqual([p1.title, p2.title, p3.title].sort());
-//     });
+        const res = await request(app).get("/api/projects").set('Authorization', `Bearer ${token}`).expect(200);
+        console.log(res.body)
+        expect(Array.isArray(res.body.items)).toBe(true);
+        for (const item of res.body.items) {
+            expect(item).toHaveProperty("title");
+        }
+        expect(res.body.total).toBe(3);
+        expect(res.body.page).toBe(1);
+        expect(res.body.limit).toBe(10);
+        expect(res.body.totalPages).toBe(1);
+        const titles = res.body.items.map((i:ProjectPreviewCardDto) => i.title).sort();
+        expect(titles).toEqual([p1.title, p2.title, p3.title].sort());
+    });
 
-//     it("should filter by search across title", async () => {
-//         await Project.deleteMany({});
-//         await createProjectWith({ title: "Unique Searchable Title" });
-//         await createProjectWith({ title: "Another One" });
+    it("should filter by search across title", async () => {
+        await Project.deleteMany({});
+        await createProjectWith({ title: "Unique Searchable Title" });
+        await createProjectWith({ title: "Another One" });
 
-//         const res = await request(app)
-//             .get("/api/projects")
-//             .query({ search: "searchable" })
-//             .expect(200);
-//         expect(res.body.total).toBe(1);
-//         expect(res.body.items[0].title).toBe("Unique Searchable Title");
+        const res = await request(app)
+            .get("/api/projects")
+            .query({ search: "searchable" })
+            .set('Authorization', `Bearer ${token}`)
+            .expect(200);
+        expect(res.body.total).toBe(1);
+        expect(res.body.items[0].title).toBe("Unique Searchable Title");
 
-//     });
+    });
 
-//     it("should filter by category id", async () => {
-//         await Project.deleteMany({});
-//         const mobile = await Category.findOne({ name: "Mobile development" });
-//         const web = await Category.findOne({ name: "Web development" });
-//         expect(mobile && web).toBeTruthy();
+    it("should filter by category id", async () => {
+        await Project.deleteMany({});
+        const mobile = await Category.findOne({ name: "Mobile development" });
+        const web = await Category.findOne({ name: "Web development" });
+        expect(mobile && web).toBeTruthy();
 
-//         await createProjectWith({ title: "Mobile App", categoryId: mobile?._id.toString() });
-//         await createProjectWith({ title: "Website", categoryId: web?._id.toString() });
+        await createProjectWith({ title: "Mobile App", categoryId: mobile?._id.toString() });
+        await createProjectWith({ title: "Website", categoryId: web?._id.toString() });
 
-//         const res = await request(app)
-//             .get("/api/projects")
-//             .query({ category: mobile?._id.toString() })
-//             .expect(200);
-//         expect(res.body.total).toBe(1);
-//         expect(res.body.items[0].title).toBe("Mobile App");
-//     });
+        const res = await request(app)
+            .get("/api/projects")
+            .query({ category: mobile?._id.toString() })
+            .set('Authorization', `Bearer ${token}`)
+            .expect(200);
+        expect(res.body.total).toBe(1);
+        expect(res.body.items[0].title).toBe("Mobile App");
+    });
 
-//     it("should filter by status (case-insensitive)", async () => {
-//         await Project.deleteMany({});
-//         const created = await createProjectWith({ title: "Status Change" });
-//         await request(app)
-//             .patch(`/api/projects/${created._id}/update_status`)
-//             .send({ status: ProjectStatus.IN_PROGRESS })
-//             .expect(200);
+    // it("should filter by status (case-insensitive)", async () => {
+    //     await Project.deleteMany({});
+    //     const created = await createProjectWith({ title: "Status Change" });
+    //     await request(app)
+    //         .patch(`/api/projects/${created._id}/update_status`)
+    //         .send({ status: ProjectStatus.IN_PROGRESS })
+    //         .expect(200);
+    //
+    //     await createProjectWith({ title: "Still Planned" });
+    //
+    //     const res = await request(app)
+    //         .get("/api/projects")
+    //         .query({ status: "in progress" })
+    //         .expect(200);
+    //     expect(res.body.total).toBe(1);
+    //     expect(res.body.items[0].status).toBe(ProjectStatus.IN_PROGRESS);
+    // });
 
-//         await createProjectWith({ title: "Still Planned" });
+    it("should filter by skills (requires all)", async () => {
+        await Project.deleteMany({});
+        const s1 = await Skill.findOne({ name: "Express Js" });
+        const s2 = await Skill.findOne({ name: "Angular" });
+        expect(s1 && s2).toBeTruthy();
 
-//         const res = await request(app)
-//             .get("/api/projects")
-//             .query({ status: "in progress" })
-//             .expect(200);
-//         expect(res.body.total).toBe(1);
-//         expect(res.body.items[0].status).toBe(ProjectStatus.IN_PROGRESS);
-//     });
+        const bothSkills = [s1?._id.toString(), s2?._id.toString()];
+        await createProjectWith({ title: "Both Skills", skills: bothSkills });
+        console.log([s1?._id.toString()])
+        await createProjectWith({ title: "Only One", skills: [s1?._id.toString()] });
 
-//     it("should filter by skills (requires all)", async () => {
-//         await Project.deleteMany({});
-//         const s1 = await Skill.findOne({ name: "Express Js" });
-//         const s2 = await Skill.findOne({ name: "Angular" });
-//         expect(s1 && s2).toBeTruthy();
+         const res = await request(app)
+            .get("/api/projects")
+            .query({ skills: [s1?._id.toString(), s2?._id.toString()] })
+             .set('Authorization', `Bearer ${token}`)
+            .expect(200);
+        expect(res.body.total).toBe(1);
+        expect(res.body.items[0].title).toBe("Both Skills");
+    });
 
-//         const bothSkills = [s1?._id.toString(), s2?._id.toString()];
-//         await createProjectWith({ title: "Both Skills", skills: bothSkills });
-//         await createProjectWith({ title: "Only One", skills: [s1?._id.toString()] });
+    it("should support pagination via page and limit", async () => {
+        await Project.deleteMany({});
+        await createProjectWith({ title: "Proj1" });
+        await createProjectWith({ title: "Proj2" });
+        await createProjectWith({ title: "Proj3" });
 
-//          const res = await request(app)
-//             .get("/api/projects")
-//             .query({ skills: [s1?._id.toString(), s2?._id.toString()] })
-//             .expect(200);
-//         expect(res.body.total).toBe(1);
-//         expect(res.body.items[0].title).toBe("Both Skills");
-//     });
+        const res = await request(app)
+            .get("/api/projects")
+            .query({ limit: 2, page: 2 })
+            .set('Authorization', `Bearer ${token}`)
+            .expect(200);
+        expect(res.body.page).toBe(2);
+        expect(res.body.limit).toBe(2);
+        expect(res.body.total).toBe(3);
+        expect(res.body.totalPages).toBe(2);
+        expect(res.body.items.length).toBe(1);
+    });
 
-//     it("should support pagination via page and limit", async () => {
-//         await Project.deleteMany({});
-//         await createProjectWith({ title: "Proj1" });
-//         await createProjectWith({ title: "Proj2" });
-//         await createProjectWith({ title: "Proj3" });
+    it("should return 400 for invalid status filter", async () => {
+        const res = await request(app)
+            .get("/api/projects")
+            .query({ status: "not_a_status" })
+            .set('Authorization', `Bearer ${token}`)
+            .expect(400);
+        expect(res.status).toBe(400);
+    });
 
-//         const res = await request(app)
-//             .get("/api/projects")
-//             .query({ limit: 2, page: 2 })
-//             .expect(200);
-//         expect(res.body.page).toBe(2);
-//         expect(res.body.limit).toBe(2);
-//         expect(res.body.total).toBe(3);
-//         expect(res.body.totalPages).toBe(2);
-//         expect(res.body.items.length).toBe(1);
-//     });
+    it("rejects invalid query params with 400 (limit/page/category/skills)", async () => {
 
-//     it("should return 400 for invalid status filter", async () => {
-//         const res = await request(app)
-//             .get("/api/projects")
-//             .query({ status: "not_a_status" })
-//             .expect(400);
-//         expect(res.status).toBe(400);
-//     });
-
-//     it("rejects invalid query params with 400 (limit/page/category/skills)", async () => {
-
-//         await request(app).get("/api/projects").query({ page: 0 }).expect(400);
-//         await request(app).get("/api/projects").query({ limit: -5 }).expect(400);
-//         await request(app).get("/api/projects").query({ page: "abc" }).expect(400);
-//         await request(app).get("/api/projects").query({ limit: "abc" }).expect(400);
+        await request(app).get("/api/projects").query({ page: 0 }).set('Authorization', `Bearer ${token}`).expect(400);
+        await request(app).get("/api/projects").query({ limit: -5 }).set('Authorization', `Bearer ${token}`).expect(400);
+        await request(app).get("/api/projects").query({ page: "abc" }).set('Authorization', `Bearer ${token}`).expect(400);
+        await request(app).get("/api/projects").query({ limit: "abc" }).set('Authorization', `Bearer ${token}`).expect(400);
     
 
-//         await request(app).get("/api/projects").query({ category: "not-an-id" }).expect(400);
+        await request(app).get("/api/projects").query({ category: "not-an-id" }).set('Authorization', `Bearer ${token}`).expect(400);
     
 
-//         await request(app).get("/api/projects").query({ skills: ["ok", "not-an-id"] }).expect(400);
-//       });
+        await request(app).get("/api/projects").query({ skills: ["ok", "not-an-id"] }).set('Authorization', `Bearer ${token}`).expect(400);
+      });
 
     
-//       it("search is case-insensitive and trims whitespace", async () => {
-//         await createProjectWith({ title: "Unique Searchable Title" });
-//         const res = await request(app).get("/api/projects").query({ search: "  SEARCHABLE  " }).expect(200);
-//         expect(res.body.total).toBe(1);
-//         expect(res.body.items[0].title).toBe("Unique Searchable Title");
-//       });
-// });
+      it("search is case-insensitive and trims whitespace", async () => {
+        await createProjectWith({ title: "Unique Searchable Title" });
+        const res = await request(app).get("/api/projects").query({ search: "  SEARCHABLE  " }).set('Authorization', `Bearer ${token}`).expect(200);
+        expect(res.body.total).toBe(1);
+        expect(res.body.items[0].title).toBe("Unique Searchable Title");
+      });
+});
 

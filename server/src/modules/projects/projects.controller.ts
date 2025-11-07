@@ -10,12 +10,18 @@ import { updateProjectSchema } from "./dto/update.project.dto";
 export default class ProjectsController{
 
     static async createProject(req: Request, res: Response, next: NextFunction) {
-        const dto = validationWrapper(createProjectSchema, req.body || {});
+        // Normalize skills to array for multipart form data
+        const body = { ...req.body };
+        if (body.skills !== undefined) {
+            body.skills = Array.isArray(body.skills) ? body.skills : [body.skills];
+        }
+        
+        const dto = validationWrapper(createProjectSchema, body);
         const userId = res.locals?.user?.userId;
         if (!userId) throw new ErrorWithStatus(400, "User ID is required");
         const files = (req.files as Express.Multer.File[]) || [];
         const project = await  ProjectsService.createProject(dto,userId, files);
-        res.status(201).json(project);
+        res.status(201).json({ project });
         
     }
 
@@ -27,7 +33,7 @@ export default class ProjectsController{
             skills,
             page = '1',
             limit = '10',
-        } = req.query as Record<string, string | undefined>;
+        } = req.query as Record<string, string | string[] | undefined>;
 
         const params: {
             search?: string;
@@ -51,7 +57,13 @@ export default class ProjectsController{
         if (s) params.search = s;
         if (category) params.category = String(category);
         if (status) params.status = String(status);
-        if (typeof skills !== 'undefined') params.skills = Array.isArray(skills) ? skills : [skills];
+        if (typeof skills !== 'undefined') {
+            if (Array.isArray(skills)) {
+                params.skills = skills.map(s => String(s));
+            } else {
+                params.skills = [String(skills)];
+            }
+        }
 
         const response = await ProjectsService.listProjects(params);
 
@@ -79,12 +91,7 @@ export default class ProjectsController{
     // }
 
     static async updateProject(req: Request, res: Response, next: NextFunction) {
-        const raw = typeof req.body?.data === 'string' ? JSON.parse(req.body.data) : req.body.data;
-        const dto = validationWrapper(updateProjectSchema, raw);
-        const projectId = req.params.id;
-        if (!projectId) throw new ErrorWithStatus(400, "Project ID is required");
-        const updatedProject = await ProjectsService.updateProject(projectId, dto);
-        res.status(200).json({ project: updatedProject });
+        
                 
     }
 
@@ -96,5 +103,14 @@ export default class ProjectsController{
         const updatedProject = await ProjectsService.updateStatus(projectId, dto.status);
         res.status(200).json({ project: updatedProject });
                 
+    }
+
+    static async updateProject2(req: Request, res: Response, next: NextFunction) {
+        const raw = typeof req.body?.data === 'string' ? JSON.parse(req.body.data) : req.body.data;
+        const dto = validationWrapper(updateProjectSchema, raw);
+        const projectId = req.params.id;
+        if (!projectId) throw new ErrorWithStatus(400, "Project ID is required");
+        const updatedProject = await ProjectsService.updateProject(projectId, dto);
+        res.status(200).json({ project: updatedProject });
     }
 }

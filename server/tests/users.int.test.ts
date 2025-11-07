@@ -83,7 +83,7 @@ describe("PATCH /api/users/me", () => {
 				department: "IF",
 				class: "3BHIF",
 				github_link: "https://github.com/john-doe",
-				skills: [skills[0]._id.toString()],
+				skills: [skills[0]?._id.toString()],
 			})
 			.set('Authorization', `Bearer ${token}`)
 			.expect(200)

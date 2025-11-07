@@ -6,5 +6,10 @@ export type ProjectPreviewCardDto = { id: string,
     tags: string[],
     deadline: Date,
     status: string,
+    images: Array<{
+        _id: string;
+        image_path: string;
+        projectId: string;
+    }>;
 }
 

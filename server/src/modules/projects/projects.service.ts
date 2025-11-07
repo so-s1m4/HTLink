@@ -61,7 +61,7 @@ export default class ProjectsService {
         }
 
         return {
-            id: finishedProject._id.toString(),
+            id: finishedProject.id.toString(),
             title: finishedProject.title,
             category: {
                 id: finishedProject.categoryId._id.toString(),
@@ -143,17 +143,45 @@ export default class ProjectsService {
                 .limit(safeLimit)
         ]);
 
-        const items = projects.map(p => ({
-            id: p._id.toString(),
-            title: p.title,
-            shortDescription: p.shortDescription,
-            tags: p.skills,
-            deadline: p.deadline,
-            status: p.status,
-        }));
+        const allImageIds = projects.flatMap(p => p.images || []);
+
+        const allImages = await Image.find({ _id: { $in: allImageIds } });
+
+        const imageMap = new Map(
+            allImages.map(img => [
+                img._id.toString(),
+                {
+                    _id: img._id.toString(),
+                    image_path: img.image_path,
+                    projectId: img.projectId.toString(),
+                }
+            ])
+        );
+
+        const items = projects.map((p) => {
+            if (!p) return null;
+
+
+            const images = (p.images || [])
+                .map(imgId => imageMap.get(imgId.toString()))
+                .filter((img): img is { _id: string; image_path: string; projectId: string } => img !== undefined);
+
+            return {
+                id: p._id.toString(),
+                title: p.title,
+                shortDescription: p.shortDescription,
+                tags: p.skills,
+                deadline: p.deadline,
+                status: p.status,
+                images,
+            };
+        });
+
+        // Filter out any null items (shouldn't happen, but defensive)
+        const validItems = items.filter((item): item is NonNullable<typeof item> => item !== null);
 
         return {
-            items,
+            items: validItems,
             page: safePage,
             limit: safeLimit,
             total,

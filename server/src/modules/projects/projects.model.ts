@@ -17,7 +17,7 @@ export interface IProject {
 }
 
 
-// TODO separate in new table and add import script
+
 
 
 export enum ProjectStatus {
@@ -36,7 +36,7 @@ export const projectSchema = new Schema<IProject>({
     },
     categoryId: {
         type: Schema.Types.ObjectId ,
-        ref: 'ProjectCategory',
+        ref: 'Category',
     },
     shortDescription: {
         type: String,
