@@ -5,29 +5,15 @@ import { ErrorWithStatus } from "../../common/middlewares/errorHandlerMiddleware
 import mongoose, { HydratedDocument } from "mongoose";
 import { fetchCategoryOrFail, fetchSkillsOrFail, mapProjectToFullDto, toObjectId } from "./utils/project.helpers";
 import { IImage, Image } from "./images/image.model";
-import { UpdateProjectDto } from "./dto/update.project.dto";
-import { ISkill } from "../skills/skills.model";
+import { UpdateProjectDto } from "./dto/patch.project.dto";
+import { ListProjectsQueryDto } from "./dto/list.projects.dto";
+import {ISkill, Skill} from "../skills/skills.model";
 import { Category, ICategory } from "../categories/category.model";
+import * as sea from "node:sea";
+
 
 // helpers moved to ./utils/project.helpers
 
-export type PublicProjectDetailed = {
-    id: string;
-    title: string;
-    category: string;
-    shortDescription: string;
-    fullReadme: string;
-    deadline: Date;
-    ownerId: string;
-    status: ProjectStatus;
-    skills: Array<{ id: string, name: string }>;
-    images: Array<{
-        id: string;
-        image_path: string;
-    }>;
-    createdAt: Date;
-    updatedAt: Date;
-};
 
 export default class ProjectsService {
     static async createProject(project: CreateProjectDto, ownerId:string, files: Express.Multer.File[] = []) {
@@ -61,7 +47,7 @@ export default class ProjectsService {
         }
 
         return {
-            id: finishedProject._id.toString(),
+            id: finishedProject.id.toString(),
             title: finishedProject.title,
             category: {
                 id: finishedProject.categoryId._id.toString(),
@@ -82,19 +68,12 @@ export default class ProjectsService {
         }
     }
 
-    static async listProjects(params: {
-        search?: string,
-        category?: string,
-        status?: string,
-        skills?: string[],
-        page?: number,
-        limit?: number,
-    }) {
+    static async listProjects(params: ListProjectsQueryDto) {
         const {
             search = '',
             category,
             status,
-            skills,
+            skills = [],
             page = 1,
             limit = 10,
         } = params;
@@ -112,22 +91,13 @@ export default class ProjectsService {
 
 
         if (status) {
-            const matched = (Object.values(ProjectStatus) as string[])
-                .find(v => v.toLowerCase() === status.toLowerCase());
-            if (!matched) {
-                throw new ErrorWithStatus(400, `Invalid status: ${status}`);
-            }
-            filter.status = matched;
+            filter.status = status;
         }
 
 
-        if (typeof skills !== 'undefined') {
-            const input = Array.isArray(skills) ? skills : [skills];
-
-            const objectIds = input.map(toObjectId);
-            if (objectIds.length > 0) {
-                filter.skills = { $all: objectIds };
-            }
+        if (skills && skills.length > 0) {
+            const objectIds = skills.map(toObjectId);
+            filter.skills = { $all: objectIds };
         }
 
         const safeLimit = Math.max(1, Math.min(100, Number(limit) || 10));
@@ -143,17 +113,47 @@ export default class ProjectsService {
                 .limit(safeLimit)
         ]);
 
-        const items = projects.map(p => ({
-            id: p._id.toString(),
-            title: p.title,
-            shortDescription: p.shortDescription,
-            tags: p.skills,
-            deadline: p.deadline,
-            status: p.status,
-        }));
+        const allImageIds = projects.flatMap(p => p.images || []);
+
+        const allImages = await Image.find({ _id: { $in: allImageIds } });
+
+        const imageMap = new Map(
+            allImages.map(img => [
+                img._id.toString(),
+                {
+                    _id: img._id.toString(),
+                    image_path: img.image_path,
+                    projectId: img.projectId.toString(),
+                }
+            ])
+        );
+
+        const items = projects.map((p) => {
+            if (!p) return null;
+            const category = Category.findById(p.categoryId);
+
+
+
+            const images = (p.images || [])
+                .map(imgId => imageMap.get(imgId.toString()))
+                .filter((img): img is { _id: string; image_path: string; projectId: string } => img !== undefined);
+
+            return {
+                id: p._id.toString(),
+                title: p.title,
+                categoryId: p.categoryId.toString(),
+                shortDescription: p.shortDescription,
+                tags: p.skills,
+                deadline: p.deadline,
+                status: p.status,
+                images,
+            };
+        });
+
+        const validItems = items.filter((item): item is NonNullable<typeof item> => item !== null);
 
         return {
-            items,
+            items: validItems,
             page: safePage,
             limit: safeLimit,
             total,
@@ -161,22 +161,7 @@ export default class ProjectsService {
         };
     }
 
-    static async updateStatus(projectId: string, status: ProjectStatus) {
-        if (!projectId || !mongoose.Types.ObjectId.isValid(projectId)) {
-            throw new ErrorWithStatus(400, "Invalid project id");
-        }
-        const project = await Project.findByIdAndUpdate(
-          projectId,
-          { $set: { status } },
-          { new: true, runValidators: true, context: "query" }
-        );
-        if (!project) {
-            throw new ErrorWithStatus(404, "Project not found");
-        }
 
-        //TODO: add images to the response
-        return mapProjectToFullDto(project);
-    }
 
     static async getProjectById(projectId: string) {
 
@@ -188,38 +173,127 @@ export default class ProjectsService {
         if (!project) {
             throw new ErrorWithStatus(404, "Project not found");
         }
-        return mapProjectToFullDto(project)
+        const finishedProject = await Project.findById(project._id).populate<{images: IImage[]}>("images").populate<{skills: ISkill[]}>("skills").populate<{categoryId: ICategory}>("categoryId")
+
+        if (!finishedProject) {
+            throw new ErrorWithStatus(404, "Project not found");
+        }
+
+        return {
+            id: finishedProject.id.toString(),
+            title: finishedProject.title,
+            category: {
+                id: finishedProject.categoryId._id.toString(),
+                name: finishedProject.categoryId.name
+            },
+            shortDescription: finishedProject.shortDescription,
+            fullReadme: finishedProject.fullReadme,
+            deadline: finishedProject.deadline,
+            ownerId: finishedProject.ownerId.toString(),
+            status: finishedProject.status,
+            skills: finishedProject.skills?.map((skill: ISkill) => ({id: skill._id.toString(), name: skill.name})) ?? [],
+            images: finishedProject.images?.map((img: IImage) => ({
+                id: img._id.toString(),
+                image_path: img.image_path,
+            })) ?? [],
+            createdAt: finishedProject.createdAt,
+            updatedAt: finishedProject.updatedAt,
+        }
 
     }
 
-    // static async getProjectByOwnerId(ownerId: string) {
-    //     if (!mongoose.Types.ObjectId.isValid(ownerId)) {
-    //         throw new ErrorWithStatus(400, "Invalid owner id");
-    //     }
-    //     const project = await Project.findOne({ ownerId: ownerId })
-    //     if (!project) {
-    //         throw new ErrorWithStatus(404, "Project not found");
-    //     }
-    //     return mapProjectToFullDto(project)
-    // }
+    static async getProjectByOwnerId(ownerId: string) {
+        if (!mongoose.Types.ObjectId.isValid(ownerId)) {
+            throw new ErrorWithStatus(400, "Invalid owner id");
+        }
 
-    static async updateProject(projectId: string, updateProjectDto: UpdateProjectDto) {
-        console.log(
-            "updateProjectDto",
-            updateProjectDto
-        )
+        const projects = await Project.find({ ownerId: ownerId })
+            .populate<{images: IImage[]}>("images")
+            .populate<{skills: ISkill[]}>("skills")
+            .populate<{categoryId: ICategory}>("categoryId")
+            .sort({ createdAt: -1 });
+
+        if (!projects || projects.length === 0) {
+            return [];
+        }
+
+        return projects.map((project) => ({
+            id: project.id.toString(),
+            title: project.title,
+            category: {
+                id: project.categoryId._id.toString(),
+                name: project.categoryId.name
+            },
+            shortDescription: project.shortDescription,
+            fullReadme: project.fullReadme,
+            deadline: project.deadline,
+            ownerId: project.ownerId.toString(),
+            status: project.status,
+            skills: project.skills?.map((skill: ISkill) => ({
+                id: skill._id.toString(),
+                name: skill.name
+            })) ?? [],
+            images: project.images?.map((img: IImage) => ({
+                id: img._id.toString(),
+                image_path: img.image_path,
+            })) ?? [],
+            createdAt: project.createdAt,
+            updatedAt: project.updatedAt,
+        }));
+    }
+
+    static async updateProject(projectId: string, updateProjectDto: UpdateProjectDto, userId: string) {
+
         if (!mongoose.Types.ObjectId.isValid(projectId)) {
             throw new ErrorWithStatus(400, "Invalid project id");
         }
-        const updatedProject = await Project.findByIdAndUpdate(projectId, { $set: updateProjectDto }, { new: true, runValidators: true, context: "query" });
-        if (!updatedProject) {
+
+
+        const project = await Project.findById(projectId);
+        console.log(project?.categoryId)
+        if (!project) {
             throw new ErrorWithStatus(404, "Project not found");
         }
-        console.log(
-            "updatedProject",
-            updatedProject
-        )
-        return mapProjectToFullDto(updatedProject);
+        if (userId !== project.ownerId.toString()) {
+            throw new ErrorWithStatus(403, "Forbidden");
+        }
+        const updatedProject = await Project.findByIdAndUpdate(
+            projectId,
+            { $set: updateProjectDto },
+            { new: true, runValidators: true, context: "query" }
+        );
+
+
+        const finishedProject = await Project
+                                        .findById(updatedProject?._id)
+                                        .populate<{images: IImage[]}>("images")
+                                        .populate<{skills: ISkill[]}>("skills")
+                                        .populate<{categoryId: ICategory}>("categoryId")
+
+        if (!finishedProject) {
+            throw new ErrorWithStatus(404, "Project not found");
+        }
+
+        return {
+            id: finishedProject.id.toString(),
+            title: finishedProject.title,
+            category: {
+                id: finishedProject.categoryId._id.toString(),
+                name: finishedProject.categoryId.name
+            },
+            shortDescription: finishedProject.shortDescription,
+            fullReadme: finishedProject.fullReadme,
+            deadline: finishedProject.deadline,
+            ownerId: finishedProject.ownerId.toString(),
+            status: finishedProject.status,
+            skills: finishedProject.skills?.map((skill: ISkill) => ({id: skill._id.toString(), name: skill.name})) ?? [],
+            images: finishedProject.images?.map((img: IImage) => ({
+                id: img._id.toString(),
+                image_path: img.image_path,
+            })) ?? [],
+            createdAt: finishedProject.createdAt,
+            updatedAt: finishedProject.updatedAt,
+        }
     }
 
     static async deleteProject(projectId: string, userId: string) {
@@ -244,17 +318,16 @@ export default class ProjectsService {
     }
 
     static createSearchFilter(search: string) {
-
-        if (search && search.trim()) {
-            const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");  // Example: input node.js (beta)? becomes node\.js \(beta\)\?,
+        if (search) {
+            const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
             const regex = new RegExp(escaped, 'i');
             return [
-                    { title: regex },
-                    { shortDescription: regex },
-                    { fullReadme: regex },
-                ];
-            }
-            return undefined;
+                { title: regex },
+                { shortDescription: regex },
+                { fullReadme: regex },
+            ];
         }
+        return undefined;
+    }
 
 }

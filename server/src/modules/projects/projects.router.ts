@@ -6,14 +6,11 @@ import JWTMiddleware from "../../common/middlewares/JWTMiddleware";
 
 const projectsRouter = Router();
 
-
-// post request should work with JWT
 projectsRouter.post('/', JWTMiddleware, upload.array('image', 5), ErrorWrapper(ProjectsController.createProject));
-//--
-projectsRouter.get('/', ErrorWrapper(ProjectsController.list));
-projectsRouter.patch('/:id/update_status', ErrorWrapper(ProjectsController.updateStatus));
-projectsRouter.get("/:id", ErrorWrapper(ProjectsController.getProjectById));
-// projectsRouter.get("own_projects/me", JWTMiddleware, ErrorWrapper(ProjectsController.getMyProjects));
-projectsRouter.put("/:id/update_project", upload.array('image', 5), ErrorWrapper(ProjectsController.updateProject));
+projectsRouter.get('/', JWTMiddleware, ErrorWrapper(ProjectsController.list));
+projectsRouter.get("/my_projects", JWTMiddleware, ErrorWrapper(ProjectsController.getMyProjects));
+projectsRouter.get("/:id", JWTMiddleware, ErrorWrapper(ProjectsController.getProjectById));
+projectsRouter.patch("/:id/update", JWTMiddleware, ErrorWrapper(ProjectsController.updateProject))
+projectsRouter.delete("/:id", JWTMiddleware, ErrorWrapper(ProjectsController.deleteProject));
 
 export default projectsRouter;

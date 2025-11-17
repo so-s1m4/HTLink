@@ -1,6 +1,6 @@
 import { Category } from "../modules/categories/category.model";
 
-export const ProjectCategory = [
+export const category = [
     "Web development",
     "Mobile development",
     "Design",
@@ -14,7 +14,7 @@ export const ProjectCategory = [
 ];
 
 export default class setCategories {
-    static categories = Object.values(ProjectCategory)
+    static categories = Object.values(category)
 
     constructor(categories: string[] = []) {
         if (categories.length > 1) {
