@@ -1,0 +1,19 @@
+<app-block>
+  <div class="block">
+    <div class="input-holder">
+      <label>{{placeholder()}}</label>
+      <input type="text" [(ngModel)]="value">
+    </div>
+    <div class="btn main" (click)="onSubmit()">
+      <svg icon="search"></svg> Search
+    </div>
+  </div>
+  @if (filters()) {
+  <div class="filters-holder">
+    <div class="filter" *ngFor="let filter of filters()">
+      <app-select [placeholder]="filter.label" [options]="filter.options" (valueChange)="onChangeValueFilter(filter.label, $event)"></app-select>
+    </div>
+  </div>
+
+}
+</app-block>

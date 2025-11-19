@@ -1,0 +1,5 @@
+<app-search-bar [filters]="availableFilters" (submit)="onSubmitSearch($event)"></app-search-bar>
+
+@for (user of searchResults; track user.id) {
+  <app-user-preview [data]="user"></app-user-preview>
+}

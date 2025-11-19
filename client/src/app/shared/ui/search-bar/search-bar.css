@@ -1,0 +1,19 @@
+.block {
+  display: flex;
+  flex-direction: row;
+  gap: .5rem;
+
+  .input-holder {
+    width: 70%;
+  }
+  .btn {
+    width: 30%;
+  }
+}
+
+.filters-holder {
+  width: 100%;
+  display: flex;
+  gap: .5rem;
+  align-items: center;
+}
