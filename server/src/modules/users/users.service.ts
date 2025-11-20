@@ -18,6 +18,7 @@ class UsersService {
 			if (login === 200) return true
 			return false
 		} catch (error) {
+			console.log(error)
 			return false
 		}
 	}
@@ -31,6 +32,7 @@ class UsersService {
 			}
 			return userInfo;
 		} catch (error) {
+			console.log(error)
 			throw new ErrorWithStatus(400, "User not found");
 		}
 	}
