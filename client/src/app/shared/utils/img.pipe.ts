@@ -12,7 +12,7 @@ export class ImgPipe implements PipeTransform {
     if (!value) {
       return DEFAULT_AVATAR_URL;
     }
-    return API_URL + "/public/" + value;
+    return "/public/" + value;
   }
 
   public transform(
