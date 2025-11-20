@@ -1,7 +1,6 @@
 import { HttpEvent, HttpHandlerFn, HttpRequest } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AuthService } from '@core/services/auth.service';
-import { API_URL } from '@core/eviroments/config.constants';
 import { catchError, Observable, throwError } from 'rxjs';
 import {NotificationService} from '@core/services/notification.service';
 
@@ -10,14 +9,6 @@ export function loggingInterceptor(
   next: HttpHandlerFn
 ): Observable<HttpEvent<unknown>> {
   const authService = inject(AuthService);
-
-  // Prefix relative URLs with API_URL, avoiding double slashes
-  // if (!req.url.startsWith('http')) {
-  //   const path = req.url.startsWith('/') ? req.url : `/${req.url}`;
-  //   req = req.clone({
-  //     url: `${API_URL}${path}`,
-  //   });
-  // }
 
   // Read token from signal and set header only if present
   const token = authService.token();

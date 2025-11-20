@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import {API_URL,DEFAULT_AVATAR_URL} from '@core/eviroments/config.constants';
+import { DEFAULT_AVATAR_URL } from '@core/eviroments/config.constants';
 
 @Pipe({
   name: 'img',
