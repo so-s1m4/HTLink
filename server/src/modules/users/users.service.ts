@@ -6,18 +6,53 @@ import { config } from "../../config/config";
 import UserMapper from "./users.mappers";
 import deleteFile from "../../common/utils/utils.deleteFile";
 import { Skill } from "../skills/skills.model";
+import LDAPService from "./authenticate";
+
+
 
 class UsersService {
 	static async isUserValid(dto: LoginDTO) {
-		return true
+		try {
+			const login = await LDAPService.login(dto.login.toString(), dto.password);
+			if (login === 200) return true
+			return false
+		} catch (error) {
+			return false
+		}
+	}
+
+	static async getUserInfo(dto: LoginDTO) {
+		try {
+			const userInfo = await LDAPService.getInfo(dto.login.toString());
+			if (typeof userInfo === 'number' || !userInfo) {
+				throw new ErrorWithStatus(400, "User not found");
+			}
+			return userInfo;
+		} catch (error) {
+			throw new ErrorWithStatus(400, "User not found");
+		}
 	}
 
 	static async login(dto: LoginDTO) {
-		if (!await this.isUserValid(dto)) throw new ErrorWithStatus(400, "Login or password is false")
+		const isUserValid = await this.isUserValid(dto);
+		if (!isUserValid) throw new ErrorWithStatus(400, "Login or password is false");
+		const userInfo = await this.getUserInfo(dto);
+
 		const user = await User.findOne({ pc_number: dto.login })
 		if (user) return jwt.sign({ userId: user._id }, config.JWT_SECRET, { expiresIn: '14d' })
+		
 		const newuser = new User()
 		newuser.pc_number = dto.login
+
+		newuser.class = userInfo.description
+		newuser.first_name = userInfo.givenName
+		newuser.last_name = userInfo.sn
+		const isPerson = Array.isArray(userInfo.objectClass) && userInfo.objectClass.includes('person')
+		const departmentStr = userInfo.department || ''
+		const isStudent = departmentStr.toLowerCase().includes('student')
+		newuser.role = isPerson || isStudent ? 'student' : 'teacher'
+		newuser.department = userInfo.department ? userInfo.department.split('-')[0] : undefined
+		
 		await newuser.save()
 		return jwt.sign({ userId: newuser._id }, config.JWT_SECRET, { expiresIn: '14d' })
 	}
