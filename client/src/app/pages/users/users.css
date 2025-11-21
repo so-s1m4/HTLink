@@ -17,12 +17,16 @@
 
   height: fit-content;
   padding-bottom: 6rem;
+
+  app-user-preview {
+    min-width: 450px;
+  }
 }
 
 
 @media (min-width: 801px) {
   :host {
-    padding: 0 20%;
+    padding: 0 15%;
   }
   .users-holder {
     display: flex;
