@@ -65,6 +65,10 @@ app-block {
     'e .';
 
   padding: 2rem 10%;
+
+  app-block {
+    width: 40vw;
+  }
 }
 
 .btn.save {
