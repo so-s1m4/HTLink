@@ -25,8 +25,8 @@ app-block .header {
     position: absolute;
     right: 1rem;
     top: 1rem;
+    width: 2rem;
     height: 2rem;
-    width: fit-content;
 
     color: var(--primary-color);
 

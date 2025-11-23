@@ -59,8 +59,9 @@ export class Profile implements OnInit {
                   return signal<ProfileType>(res.user);
                 }
         ), projects: []
-        };
+        }
       }
+    console.log(this.isMy)  
     })
   }
 }

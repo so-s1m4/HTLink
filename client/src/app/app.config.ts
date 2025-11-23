@@ -34,7 +34,7 @@ export const appConfig: ApplicationConfig = {
     }),
     provideNgIconsConfig({
       size: '2rem',
-      strokeWidth: "1"
+      strokeWidth: "1",
     })
   ],
 };

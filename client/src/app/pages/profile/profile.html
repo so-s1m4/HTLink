@@ -5,7 +5,7 @@
       <div class="action-btns"></div>
       <div class="avatar"><img [src]="data.user().photo_path | img" alt=""></div>
       @if (isMy) {
-        <ng-icon class="btn edit" [routerLink]="'/profile/me/edit'" [name]="Icons.Edit"></ng-icon>
+        <ng-icon class="btn edit" [routerLink]="'/profile/me/edit'" [name]="Icons.Edit">Edit</ng-icon>
       }
     </div>
     <div class="body">
