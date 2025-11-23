@@ -29,6 +29,11 @@ jobs:
             frontend:
               - 'client/**'
 
+      - name: Print detected changes
+        run: |
+          echo "Backend changed: ${{ steps.filter.outputs.backend }}"
+          echo "Frontend changed: ${{ steps.filter.outputs.frontend }}"
+
   notifyStart:
     runs-on: ubuntu-latest
     if: always()
