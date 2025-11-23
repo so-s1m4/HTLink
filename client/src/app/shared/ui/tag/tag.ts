@@ -1,4 +1,5 @@
 import {Component, EventEmitter, HostBinding, input, Input, OnInit, Output} from '@angular/core';
+import { Icons } from '@core/types/icons.enum';
 import { NgIcon } from "@ng-icons/core";
 
 export type TagType = 'class' | 'department' | 'role';
@@ -11,6 +12,8 @@ export type TagType = 'class' | 'department' | 'role';
   styleUrl: './tag.css'
 })
 export class Tag implements OnInit {
+  Icons = Icons;
+  
   @Input() removable: boolean = false;
   @Output() remove = new EventEmitter<unknown>();
 
