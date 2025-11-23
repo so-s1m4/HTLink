@@ -50,7 +50,6 @@ body {
 svg * {
   width: inherit;
   height: inherit;
-  fill: inherit;
   color: inherit;
 }
 
