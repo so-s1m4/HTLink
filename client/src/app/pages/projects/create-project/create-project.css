@@ -50,10 +50,8 @@
 
   overflow: auto;
 
-  .svg {
+  & > ng-icon {
     color: var(--gray-color);
-
-    height: 15rem;
     transform: rotate(-15deg);
     aspect-ratio: 1 / 1;
   }
@@ -93,10 +91,6 @@
 
   z-index: 1;
 
-  .svg {
-    height: 40%;
-  }
-
   .select label {
     font-size: 0.9rem;
     padding: .5rem 1rem;
@@ -117,7 +111,7 @@
     width: 1.5rem;
     height: 1.5rem;
 
-    svg {
+    ng-icon {
       color: red;
 
       &:hover {
@@ -146,10 +140,8 @@
     justify-content: center;
     align-items: center;
 
-    svg {
+    ng-icon {
       color: var(--main-color);
-      height: 90%;
-      aspect-ratio: 1 / 1;
     }
   }
 }
@@ -179,9 +171,6 @@ app-block {
     .input-holder {
       width: 70%;
     }
-    .btn.main {
-      width: 30%;
-    };
   }
 }
 .add-skill {

@@ -2,23 +2,25 @@ import {Component, inject, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {ProjectsService } from '@core/services/projects.service';
 import {ImageGallery} from '@shared/ui/image-gallery/image-gallery';
-import {SvgIconComponent} from '@shared/utils/svg.component';
 import {ProjectType} from '@core/types/types.constans';
 import {Block} from '@shared/ui/block/block';
+import { NgIcon } from "@ng-icons/core";
+import { Icons } from '@core/types/icons.enum';
 
 @Component({
   selector: 'app-main',
   imports: [
     ImageGallery,
-    SvgIconComponent,
-    Block
-  ],
+    Block,
+    NgIcon
+],
   templateUrl: './main.html',
   standalone: true,
   styleUrl: './main.css'
 })
 export class Main implements OnInit {
   private projectService = inject(ProjectsService)
+  Icons = Icons;
   constructor(private routes: ActivatedRoute) {}
 
   data: ProjectType | null = null

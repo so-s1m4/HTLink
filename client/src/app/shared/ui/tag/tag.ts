@@ -1,13 +1,11 @@
 import {Component, EventEmitter, HostBinding, input, Input, OnInit, Output} from '@angular/core';
-import {SvgIconComponent} from '@shared/utils/svg.component';
+import { NgIcon } from "@ng-icons/core";
 
 export type TagType = 'class' | 'department' | 'role';
 
 @Component({
   selector: 'app-tag',
-  imports: [
-    SvgIconComponent
-  ],
+  imports: [NgIcon],
   templateUrl: './tag.html',
   standalone: true,
   styleUrl: './tag.css'

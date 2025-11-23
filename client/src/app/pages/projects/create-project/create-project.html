@@ -4,8 +4,8 @@
       Create New Project - Step {{step}}
     </div>
     <div class="content" style=" display: flex; justify-content: center; align-items: center;">
-      <svg icon="media" class="svg">
-      </svg>
+      <ng-icon [name]="Icons.Photo" class="svg" size="15rem">
+      </ng-icon>
       <div class="select">
         <label for="project-name">Select From Device</label>
         <input (change)="onSelectFiles($event)" id="project-name" type="file" multiple accept="image/*" hidden />
@@ -19,14 +19,14 @@
 
       @if (selectedFiles.length) {
         <div class="btn"
-          style="position: absolute; height: 3rem; width: 3rem; top: 50%; right: 10px; transform: translateY(-50%);"
-          (click)="step=2"><svg icon="arrowRight"></svg></div>
+          style="position: absolute; height: 2rem; width: 3rem; top: 50%; right: 10px; transform: translateY(-50%);"
+          (click)="step=2"><ng-icon [name]="Icons.ArrowRight"></ng-icon></div>
         }
       </div>
       <div class="content">
         <div class="item btn add more">
-          <svg icon="media" class="svg">
-          </svg>
+          <ng-icon [name]="Icons.Photo" class="svg">
+          </ng-icon>
           <div class="select">
             <label for="project-name">Select More</label>
             <input (change)="onSelectFiles($event)" id="project-name" type="file" multiple accept="image/*" hidden />
@@ -34,7 +34,7 @@
         </div>
         @for (file of selectedFiles; let i = $index; track i) {
           <div class="item">
-            <div class="btn delete" (click)="selectedFiles.splice(i, 1)"><svg icon="trashcan"></svg></div>
+            <div class="btn delete" (click)="selectedFiles.splice(i, 1)"><ng-icon [name]="Icons.Trash" size="1.5rem" color="red"></ng-icon></div>
             <img [src]="file | fileToDataUrl" alt="Selected Image" />
           </div>
         }
@@ -44,14 +44,10 @@
     <div class="step">
       <div class="header">
         About This Project - Step {{step}}
-        <div class="btn"
-          style="position: absolute; height: 3rem; width: 3rem; top: 50%; left: 10px; transform: translateY(-50%) rotate(180deg);"
-          (click)="step=1.1"><svg icon="arrowRight"></svg></div>
-
           @if (createForm.valid) {
             <div class="btn"
-              style="position: absolute; height: 3rem; width: 3rem; top: 50%; right: 10px; transform: translateY(-50%);"
-              (click)="step=2.1"><svg icon="arrowRight"></svg></div>
+              style="position: absolute; height: 2rem; width: 3rem; top: 50%; right: 10px; transform: translateY(-50%);"
+              (click)="step=2.1"><ng-icon [name]="Icons.ArrowRight"></ng-icon></div>
             }
           </div>
           <form class="content" [formGroup]="createForm"
@@ -125,12 +121,12 @@
           <div class="header">
             Addition Readme - Step {{step}}
             <div class="btn"
-              style="position: absolute; height: 3rem; width: 3rem; top: 50%; left: 10px; transform: translateY(-50%) rotate(180deg);"
-              (click)="step=2"><svg icon="arrowRight"></svg></div>
+              style="position: absolute; height: 2rem; width: 3rem; top: 50%; left: 10px; transform: translateY(-50%) rotate(180deg);"
+              (click)="step=2"><ng-icon [name]="Icons.ArrowRight"></ng-icon></div>
 
               @if (createForm.valid) {
                 <div class="btn"
-                  style="position: absolute; height: 3rem; width: 3rem; top: 50%; right: 10px; transform: translateY(-50%); color: var(--main-color);"
+                  style="position: absolute; height: 2rem; width: 3rem; top: 50%; right: 10px; transform: translateY(-50%); color: var(--main-color);"
                 (click)="createProject()">Finish</div>
               }
             </div>
@@ -145,8 +141,8 @@
                     <label>Paste repo URL (GitHub or GitLab)</label>
                     <input type="text" formControlName="repoUrl" />
                   </div>
-                  <div class="btn main search" (click)="uploadFromRepo()">
-                    <svg icon="download" style="rotate: 180deg;"></svg>
+                  <div class="btn main search" (click)="uploadFromRepo()" style="width: 10rem;">
+                    <ng-icon [name]="Icons.Upload" size="1rem"></ng-icon>
                     @if (!isLoading) {
                       <span>Upload ReadMe</span>
                     }

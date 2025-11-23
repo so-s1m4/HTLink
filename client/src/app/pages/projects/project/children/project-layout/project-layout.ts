@@ -1,14 +1,15 @@
 import {Component, inject, OnInit} from '@angular/core';
 import {Router, RouterLink, RouterOutlet} from '@angular/router';
-import {SvgIconComponent} from '@shared/utils/svg.component';
 import {CommonModule} from '@angular/common';
 import {Location} from '@angular/common';
 import {Notifications} from '@shared/ui/notifications/notifications';
 import {Block} from '@shared/ui/block/block';
+import { Icons } from '@core/types/icons.enum';
+import { NgIcon } from "@ng-icons/core";
 
 @Component({
   selector: 'app-project-layout',
-  imports: [RouterOutlet, RouterLink, SvgIconComponent, CommonModule, Notifications, Block],
+  imports: [RouterOutlet, RouterLink, CommonModule, Notifications, Block, NgIcon],
   templateUrl: './project-layout.html',
   standalone: true,
   styleUrl: './project-layout.css',
@@ -21,10 +22,10 @@ export class ProjectLayout implements OnInit {
     { label: 'Back', path: '.', icon: 'arrowBack', click: () => this.goBack() },
   ];
   readonly pages = [
-    { label: 'About', path: './home', icon: 'home' },
-    { label: 'Comments', path: './comments', icon: 'comments' },
-    { label: 'Roles', path: './roles', icon: 'projects' },
-    { label: 'Settings', path: './settings', icon: 'hex' },
+    { label: 'About', path: './home', icon: Icons.Home },
+    { label: 'Comments', path: './comments', icon: Icons.Comments },
+    { label: 'Roles', path: './roles', icon: Icons.Projects },
+    { label: 'Settings', path: './settings', icon: Icons.Settings },
   ];
 
   ngOnInit() {}

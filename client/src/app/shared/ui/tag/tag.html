@@ -1,4 +1,5 @@
 <ng-content></ng-content>
 @if (removable) {
-  <svg (click)="remove.emit()" icon="plus" style="transform: rotate(45deg)"></svg>
+  
+  <ng-icon (click)="remove.emit()" [name]="'plus'" style="transform: rotate(45deg)"></ng-icon>
 }

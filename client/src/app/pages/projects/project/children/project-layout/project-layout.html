@@ -7,7 +7,7 @@
        [ngClass]="{
         active: isActive(page.path)
        }">
-      <svg icon="{{page.icon}}"></svg>
+      <ng-icon [name]="page.icon"></ng-icon>
       <div class="label">
         {{page.label}}
       </div>
@@ -23,7 +23,7 @@
     [ngClass]="{
             active: isActive(page.path)
           }">
-      <svg icon="{{page.icon}}"></svg>
+      <ng-icon [name]="page.icon"></ng-icon>
   </app-block>
   }
 </div>

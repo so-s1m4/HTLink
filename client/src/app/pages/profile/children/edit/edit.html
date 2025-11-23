@@ -1,12 +1,12 @@
 @if (profileService.me$()) {
   <div class="header">
     <div class="btn" routerLink="../">
-      <svg icon="arrowBack"></svg>
+      <ng-icon [name]="Icons.ArrowLeft"></ng-icon>
     </div>
     <h2>Profile</h2>
     @if (profileForm.valid) {
       <div class="btn save" [class.disabled]="isPending" (click)="submitEdit()">
-        <svg icon="check"></svg>
+        <ng-icon [name]="Icons.Check" strokeWidth="2"></ng-icon>
       </div>
     }
   </div>

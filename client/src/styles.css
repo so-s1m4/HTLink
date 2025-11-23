@@ -6,10 +6,9 @@ html, body {
   overscroll-behavior: none;
 }
 
-svg {
+ng-icon {
   height: 100%;
   aspect-ratio: 1 / 1;
-
 }
 :root {
   --bg-color: rgb(248, 250, 251);
@@ -47,7 +46,7 @@ body {
 
   background-color: var(--bg-color);
 }
-svg * {
+ng-icon * {
   width: inherit;
   height: inherit;
   color: inherit;
@@ -90,7 +89,7 @@ svg * {
     width: fit-content;
   }
 
-  svg {
+  ng-icon {
     height: inherit;
     aspect-ratio: 1/1;
     color: var(--gray-color);
@@ -109,7 +108,7 @@ svg * {
   .label {
     font-size: .6rem;
   }
-  svg {
+  ng-icon {
     object-fit: contain;
     color: var(--gray-color);
     transition: fill 0.2s ease-in-out;
@@ -119,10 +118,19 @@ svg * {
   gap: .5rem;
   height: 2rem;
   color: var(--main-color);
-  svg {
+
+  ng-icon {
     height: 60%;
     color: var(--main-color);
   }
+}
+
+.btn.active {
+  color: var(--main-color);
+}
+
+.btn.active ng-icon {
+  color: var(--main-color);
 }
 
 .btn:hover {
@@ -131,7 +139,7 @@ svg * {
   background: transparent;
   color: var(--hover-gray-color);
 
-  svg {
+  ng-icon {
     color: var(--hover-gray-color);
   }
 }
@@ -145,7 +153,7 @@ svg * {
   border: 1px solid var(--gray-color);
   justify-content: center;
 
-  svg {
+  ng-icon {
     color: var(--contrast-color);
   }
 
@@ -153,7 +161,7 @@ svg * {
     background-color: var(--main-color-light);
     color: var(--contrast-color);
 
-    svg {
+    ng-icon {
       color: var(--contrast-color);
     }
   }
@@ -167,13 +175,13 @@ svg * {
   gap: 0.5rem;
 
 
-  svg {
+  ng-icon {
     height: 1rem;
     color: var(--bg-color);
   }
 
   &:hover {
-    svg {
+    ng-icon {
       color: var(--contrast-color);
     }
   }
@@ -250,6 +258,16 @@ a {
 h1,h2,h3,h4,h5,h6 {
   color: var(--hover-gray-color);
 }
-/** {*/
-/*  outline: 1px solid red;*/
-/*}*/
+
+
+ng-icon svg {
+  width: fit-content !important;
+  height: fit-content !important;
+  max-width: 2rem;
+  max-height: 2rem;
+}
+
+app-create-project svg {
+  max-width: none;
+  max-height: none;
+}

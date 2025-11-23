@@ -1,5 +1,4 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { SvgIconComponent } from '@shared/utils/svg.component';
 import { FileToDataUrlPipe } from "../../../shared/utils/fileToDataUrl.pipe";
 import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Block } from "@shared/ui/block/block";
@@ -13,11 +12,12 @@ import { MarkdownComponent, MarkdownService } from "ngx-markdown";
 import { ReadmeService } from '@core/services/readme.service';
 import TurndownService from 'turndown';
 import { ProjectsService } from '@core/services/projects.service';
+import { NgIcon } from "@ng-icons/core";
+import { Icons } from '@core/types/icons.enum';
 
 @Component({
   selector: 'app-create-project',
   imports: [
-    SvgIconComponent,
     FileToDataUrlPipe,
     Block,
     ReactiveFormsModule,
@@ -26,7 +26,8 @@ import { ProjectsService } from '@core/services/projects.service';
     NgxEditorMenuComponent,
     NgxEditorComponent,
     MarkdownComponent,
-    FormsModule
+    FormsModule,
+    NgIcon
 ],
   templateUrl: './create-project.html',
   styleUrl: './create-project.css',
@@ -69,6 +70,7 @@ export class CreateProject implements OnInit {
   isLoading = false;
   fileError = '';
   loadError = '';
+  Icons = Icons;
 
   constructor(
     private fb: FormBuilder,

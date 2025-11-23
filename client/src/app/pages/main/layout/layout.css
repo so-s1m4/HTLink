@@ -17,7 +17,7 @@
 
 .nav .btn.svg.active {
   color: var(--main-color);
-  svg {
+  ng-icon {
     color: var(--main-color);
   }
 }
