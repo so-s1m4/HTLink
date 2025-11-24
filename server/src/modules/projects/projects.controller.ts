@@ -53,6 +53,14 @@ export default class ProjectsController{
 
     }
 
+    static async getOwnerProjects(req: Request, res: Response, next: NextFunction) {
+        const ownerId = req.params.id;
+        if (!ownerId) throw new ErrorWithStatus(400, "Owner ID is required");
+        const dto = validationWrapper(listProjectsQuerySchema, req.query);
+        const projects = await ProjectsService.listProjects({ ownerId, ...dto });
+        res.status(200).json({ projects });
+    }
+
     static async updateProject(req: Request, res: Response, next: NextFunction) {
 
         const body = { ...req.body };
