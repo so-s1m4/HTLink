@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 import {Layout} from '@app/pages/main/layout/layout';
 import {SearchProjects} from '@app/pages/projects/search-projects/search-projects';
 import {MyProjects} from '@app/pages/projects/my-projects/my-projects';
-import {MorePagesComponent} from '@app/pages/more-pages-component/more-pages-component';
+import {MorePagesComponent} from '@app/pages/main/more-pages-component/more-pages-component';
 import {Marketplace} from '@app/pages/marketplace/marketplace';
 import ProjectRoutes from '@app/pages/projects/project/project.routes';
 import {Profile} from '@app/pages/profile/profile';
@@ -12,6 +12,8 @@ import {Login} from '@app/pages/login/login';
 import {AuthGuard} from '@core/gruards/auth.guard';
 import {NotAuthGuard} from '@core/gruards/notauth.guard';
 import {Edit} from '@app/pages/profile/children/edit/edit';
+import {Users} from '@app/pages/users/users';
+import { CreateProject } from './pages/projects/create-project/create-project';
 
 export const routes: Routes = [
   {
@@ -20,68 +22,81 @@ export const routes: Routes = [
     children: [
       {
         path: 'feed',
-        component: Feed
+        component: Feed,
       },
       {
-        path: "projects",
+        path: 'projects',
         children: [
           {
-            path: "my",
+            path: 'my',
             component: MyProjects,
-            pathMatch: 'full'
-          },
-          {
-            path: "search",
-            component: SearchProjects,
-            pathMatch: 'full'
-          }
-        ]
-      },
-      {
-        path: "marketplace",
-        component: Marketplace,
-      },
-      {
-        path: "news",
-        component: News
-      },
-      {
-        path: "more",
-        children: [
-          {
-            path: "",
             canActivate: [AuthGuard],
-            component: MorePagesComponent
+            pathMatch: 'full',
           },
           {
-            path: "login",
-            canActivate: [NotAuthGuard],
-            component: Login
-          }
+            path: 'search',
+            component: SearchProjects,
+            pathMatch: 'full',
+          },
+          {
+            path: '',
+            redirectTo: 'search',
+            pathMatch: 'full',
+          },
         ],
       },
       {
-        path: "profile/me/edit",
-        component: Edit
+        path: 'marketplace',
+        component: Marketplace,
       },
       {
-        path: "profile/:id",
-        component: Profile
+        path: 'news',
+        canActivate: [AuthGuard],
+        component: News,
       },
       {
-        path: "profile",
-        redirectTo: "/profile/me",
-        pathMatch: 'full'
+        path: 'users',
+        canActivate: [AuthGuard],
+        component: Users,
+      },
+      {
+        path: 'more',
+        children: [
+          {
+            path: '',
+            canActivate: [AuthGuard],
+            component: MorePagesComponent,
+          },
+          {
+            path: 'login',
+            canActivate: [NotAuthGuard],
+            component: Login,
+          },
+        ],
+      },
+      {
+        path: 'profile/me/edit',
+        canActivate: [AuthGuard],
+        component: Edit,
+      },
+      {
+        path: 'profile/:id',
+        component: Profile,
+      },
+      {
+        path: 'profile',
+        redirectTo: '/profile/me',
+        pathMatch: 'full',
       },
     ],
   },
   {
-    path: 'projects/:id',
-    children: ProjectRoutes
+    path: 'projects/:project_id',
+    children: ProjectRoutes,
   },
   {
     path: '**',
     redirectTo: '/feed',
-    pathMatch: 'full'
-  }
+    pathMatch: 'full',
+  },
 ];

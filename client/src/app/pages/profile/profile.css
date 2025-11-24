@@ -1,13 +1,15 @@
 :host {
   width: 100%;
   height: fit-content;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   gap: 1.5rem;
 
-  padding: 2vh 1rem 1rem 1rem;
+  display: grid;
+  grid-template-areas: "a d" "c d" "b d" "b d" ". d";
+  grid-template-columns: 60% 40%;
+
+  padding: 5% 15% 5% 15%;
 }
+
 app-block .header {
   width: 100%;
   position: relative;
@@ -24,12 +26,12 @@ app-block .header {
     position: absolute;
     right: 1rem;
     top: 1rem;
+    width: 2rem;
     height: 2rem;
-    width: fit-content;
 
     color: var(--primary-color);
 
-    svg {
+    ng-icon {
       color: var(--primary-color);
     }
   }
@@ -78,14 +80,15 @@ app-block .header {
       align-items: center;
       justify-content: space-between;
       gap: 1rem;
+
       .block-item {
-        width: 100%;
+        flex: 1 1 50%;
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 0.2rem;
         background-color: var(--bg-color);
-        padding: 1rem;
+        padding: min(2vw, 1rem);
         border-radius: 1rem;
 
         .number {
@@ -104,27 +107,23 @@ app-block .header {
     }
     .email, .registered-since {
       display: flex;
-      align-items: flex-start;
+      align-items: flex-end;
 
       gap: 0.5rem;
       font-size: .8rem;
       color: var(--gray-color);
-      svg {
-        height: 1rem;
-        aspect-ratio: 1/1;
-      }
     }
   }
 }
 
-.Skill-Set, .Projects-List {
+.Skill-Set, .Projects-List, .Links {
   .header {
     height: 2rem;
     display: flex;
     align-items: center;
 
     gap: 0.5rem;
-    svg {
+    ng-icon {
       color: var(--main-color);
     }
   }
@@ -139,30 +138,64 @@ app-block .header {
 
       height: fit-content;
       width: 100%;
-
-      .tag {
-      }
     }
   }
 }
 
+.Links {
+  .links-holder {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+
+    .link{
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+
+      ng-icon {
+
+        height: 2rem;
+
+        &.github {
+          color: black;
+        }
+        &.linkedin {
+          color: #0A66C2;
+
+        }
+      }
+    }
+  }
+}
 .Projects-List {
   .header {}
   .body {
-
     .projects-holder {
       display: flex;
       flex-direction: column;
+      align-items: center;
       gap: 1rem;
     }
   }
 }
 
 
-@media (min-width: 801px) {
+@media (max-width: 1200px) {
   :host {
+    display: flex;
+    flex-direction: column;
     align-items: flex-start;
-    padding: 0 20%;
-    gap: 2rem;
+    gap: 1rem;
+    padding: 5vh 20% 1rem 20%;
+  }
+}
+@media (max-width: 800px) {
+  :host {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 2vh 1rem 1rem 1rem;
   }
 }

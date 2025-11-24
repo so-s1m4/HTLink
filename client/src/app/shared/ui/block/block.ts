@@ -4,6 +4,7 @@ import { Component } from '@angular/core';
   selector: 'app-block',
   imports: [],
   templateUrl: './block.html',
+  standalone: true,
   styleUrl: './block.css'
 })
 export class Block {

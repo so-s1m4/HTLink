@@ -1,9 +1,21 @@
 <app-block>
-  <div class="input-holder">
-  <label>{{placeholder()}}</label>
-  <input type="text" [(ngModel)]="value">
-</div>
-  <div class="btn main">
-    <svg icon="search"></svg> Search
+  <div class="block">
+    <div class="input-holder">
+      <label>{{placeholder()}}</label>
+      <input type="text" [(ngModel)]="value">
+    </div>
+    <div class="btn main" (click)="onSubmit()">
+      <ng-icon size="1rem" [name]="Icons.Search"></ng-icon> <p>Search</p>
+    </div>
   </div>
+  @if (filters()) {
+    <div class="filters-holder">
+      @for (filter of filters(); track filter) {
+        <div class="filter">
+          <app-select [placeholder]="filter.label" [options]="filter.options" (valueChange)="onChangeValueFilter(filter.label, $event)"></app-select>
+        </div>
+      }
+    </div>
+
+  }
 </app-block>

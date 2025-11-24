@@ -1,8 +1,9 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import {API_URL,DEFAULT_AVATAR_URL} from '@core/eviroments/config.constants';
+import { API_URL, DEFAULT_AVATAR_URL, isDevMode } from '@core/eviroments/config.constants';
 
 @Pipe({
   name: 'img',
+  standalone: true
 })
 export class ImgPipe implements PipeTransform {
   public static transform(
@@ -11,7 +12,11 @@ export class ImgPipe implements PipeTransform {
     if (!value) {
       return DEFAULT_AVATAR_URL;
     }
-    return API_URL + "/public/" + value;
+    if (isDevMode) {
+      return API_URL + '/public/' + value;
+    } else {
+      return '/public/' + value;
+    }
   }
 
   public transform(

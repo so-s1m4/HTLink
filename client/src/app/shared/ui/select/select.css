@@ -1,0 +1,87 @@
+:host {
+  display: block;
+  position: relative;
+  width: 100%;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.select-container {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid color-mix(in srgb, var(--gray-color, #ccc), white 60%);
+  border-radius: var(--radius);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.selected {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  color: #222;
+}
+
+.arrow {
+  transition: transform 0.25s ease;
+  opacity: 0.6;
+}
+
+.open .arrow {
+  transform: rotate(180deg);
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid color-mix(in srgb, var(--gray-color, #ccc), white 60%);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  z-index: 10;
+  overflow: hidden;
+  max-height: 240px;
+  overflow-y: auto;
+  animation: fadeInDown 0.15s ease;
+}
+
+/* если открываем вверх */
+.dropdown.up {
+  bottom: calc(100% + 6px);
+  top: auto;
+  animation: fadeInUp 0.15s ease;
+}
+
+.option {
+  padding: 0.75rem 1rem;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.option:hover {
+  background: color-mix(in srgb, var(--main-color, #9CCE2B), white 85%);
+  color: var(--main-color, #9CCE2B);
+}
+
+.option.active {
+  font-weight: bold;
+  color: var(--main-color, #9CCE2B);
+}
+
+.option.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}

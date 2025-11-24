@@ -6,11 +6,6 @@ html, body {
   overscroll-behavior: none;
 }
 
-svg {
-  height: 100%;
-  aspect-ratio: 1 / 1;
-
-}
 :root {
   --bg-color: rgb(248, 250, 251);
   --hover-color: rgb(242, 245, 249);
@@ -46,13 +41,6 @@ body {
   overflow: hidden;
 
   background-color: var(--bg-color);
-}
-svg * {
-  width: inherit;
-  height: inherit;
-  fill: inherit;
-  color: inherit;
-  stroke: inherit;
 }
 
 .logo {
@@ -92,9 +80,7 @@ svg * {
     width: fit-content;
   }
 
-  svg {
-    height: inherit;
-    aspect-ratio: 1/1;
+  ng-icon {
     color: var(--gray-color);
   }
 }
@@ -111,8 +97,7 @@ svg * {
   .label {
     font-size: .6rem;
   }
-  svg {
-    object-fit: contain;
+  ng-icon {
     color: var(--gray-color);
     transition: fill 0.2s ease-in-out;
   }
@@ -121,17 +106,27 @@ svg * {
   gap: .5rem;
   height: 2rem;
   color: var(--main-color);
-  svg {
-    height: 60%;
+
+  ng-icon {
     color: var(--main-color);
   }
 }
 
+.btn.active {
+  color: var(--main-color);
+}
+
+.btn.active ng-icon {
+  color: var(--main-color);
+}
+
 .btn:hover {
+
+  border-radius: 1rem;
   background: transparent;
   color: var(--hover-gray-color);
 
-  svg {
+  ng-icon {
     color: var(--hover-gray-color);
   }
 }
@@ -145,7 +140,7 @@ svg * {
   border: 1px solid var(--gray-color);
   justify-content: center;
 
-  svg {
+  ng-icon {
     color: var(--contrast-color);
   }
 
@@ -153,7 +148,7 @@ svg * {
     background-color: var(--main-color-light);
     color: var(--contrast-color);
 
-    svg {
+    ng-icon {
       color: var(--contrast-color);
     }
   }
@@ -167,13 +162,12 @@ svg * {
   gap: 0.5rem;
 
 
-  svg {
-    height: 1rem;
+  ng-icon {
     color: var(--bg-color);
   }
 
   &:hover {
-    svg {
+    ng-icon {
       color: var(--contrast-color);
     }
   }
@@ -205,7 +199,12 @@ svg * {
 
     border-radius: 2rem;
     font-size: .8rem;
+    resize: none;
+    padding: 1rem;
   }
+}
+.input-holder.big {
+  height: 10rem;
 }
 
 .avatar {
@@ -237,9 +236,11 @@ svg * {
   }
 }
 
+a {
+  text-decoration: underline;
+  color: var(--contrast-color);
+}
+
 h1,h2,h3,h4,h5,h6 {
   color: var(--hover-gray-color);
 }
-/** {*/
-/*  outline: 1px solid red;*/
-/*}*/
