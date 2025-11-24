@@ -5,9 +5,9 @@
 
   display: grid;
   grid-template-areas: "a d" "c d" "b d" "b d" ". d";
-  grid-template-columns: 65% 30%;
+  grid-template-columns: 60% 40%;
 
-  padding: 5% 15% 5% 20%;
+  padding: 5% 15% 5% 15%;
 }
 
 app-block .header {
