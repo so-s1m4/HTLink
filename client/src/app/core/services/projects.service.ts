@@ -16,10 +16,13 @@ export class ProjectsService {
   }
   async getMyProjects(limit?: number): Promise<{ items: ProjectType[] }> {
     return firstValueFrom(
-      this.http.get<{ projects: { items: ProjectType[] } }>('/api/projects/me', {params: limit ? { limit } : {} })
+      this.http.get<{ projects: { items: ProjectType[] } }>('/api/users/me/projects', {params: limit ? { limit } : {} })
     ).then((res) => res.projects);
   }
   async getProjectsByUserId(userId: string, limit: number): Promise<{ items: ProjectType[] }> {
+    if (userId === 'me') {
+      return await this.getMyProjects(limit);
+    }
     return firstValueFrom(
       this.http
         .get<{ items: ProjectType[] }>(`/api/projects`, {
