@@ -4,7 +4,7 @@ import { cleanObject } from '@shared/utils/utils';
 import { catchError, firstValueFrom } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { ProfileService } from './profile.service';
-import {isDevMode} from "@core/eviroments/config.constants";
+import {isDevMode} from "@core/environment/config.constants";
 
 @Injectable({
   providedIn: 'root',
@@ -13,24 +13,24 @@ export class ProjectsService {
   constructor(private http: HttpClient, private profileService: ProfileService) {}
 
   async getProject(id: string | null): Promise<{ project: ProjectType }> {
-      if (isDevMode) {
-          return {
-                project: {
-                    id: '1',
-                    title: 'Sample Project',
-                    shortDescription: 'This is a sample project description.',
-                    fullReadme: 'Detailed README content goes here.',
-                    category: { id: 'cat1', name: 'Web Development' },
-                    ownerId: 'user1',
-                    tags: [{ id: 'tag1', name: 'Angular' }, { id: 'tag2', name: 'TypeScript' }],
-                    images: [],
-                    deadline: '2024-12-31',
-                    createdAt: '2024-01-01T00:00:00Z',
-                    updatedAt: '2024-01-01T00:00:00Z',
-                    status: 'draft',
-                }
+    if (isDevMode) {
+      return {
+          project: {
+            id: '1',
+            title: 'Sample Project',
+            shortDescription: 'This is a sample project description.',
+            fullReadme: 'Detailed README content goes here.',
+            category: { id: 'cat1', name: 'Web Development' },
+            ownerId: 'user1',
+            tags: [{ id: 'tag1', name: 'Angular' }, { id: 'tag2', name: 'TypeScript' }],
+            images: [{ image_path: 'https://via.placeholder.com/150', id: "piauhsdla" }, { image_path: 'https://via.placeholder.com/150', id: "piauhsdla" }],
+            deadline: '2024-12-31',
+            createdAt: '2024-01-01T00:00:00Z',
+            updatedAt: '2024-01-01T00:00:00Z',
+            status: 'draft',
           }
       }
+    }
     return firstValueFrom(this.http.get<{ project: ProjectType }>(`/api/projects/${id}/`));
   }
   async getMyProjects(limit?: number): Promise<{ items: ProjectType[] }> {
