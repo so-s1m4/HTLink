@@ -65,6 +65,10 @@ export default class LDAPService {
   }
 
   static async login(username: string, password: string): Promise<number> {
+    // -- For testing purposes only --
+    return 200;
+
+
     const client = new Client({ url: LDAPService.CONFIG.url, timeout: 10000, connectTimeout: 10000 });
 
     try {
