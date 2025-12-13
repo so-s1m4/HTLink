@@ -26,7 +26,7 @@ services:
       - htlink
 
   tailscale:
-    build: infra/tailscale
+    build: leu3ery/htlink-tailscale:latest
     hostname: htlink-ts
     environment:
       TS_AUTHKEY: "tskey-xxxxxxxxxxxxxxxx"
