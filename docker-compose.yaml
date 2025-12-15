@@ -25,27 +25,6 @@ services:
     depends_on:
       - htlink
 
-  tailscale:
-    image: leu3ery/htlink-tailscale:latest
-    hostname: htlink-ts
-    environment:
-      TS_AUTHKEY: ${TS_AUTHKEY}
-      TS_STATE_DIR: /var/lib/tailscale
-    volumes:
-      - tailscale_state:/var/lib/tailscale
-      - /dev/net/tun:/dev/net/tun
-    cap_add:
-      - NET_ADMIN
-      - SYS_MODULE
-    restart: unless-stopped
-    command:
-      - /bin/sh
-      - -lc
-      - |
-        tailscaled --state=/var/lib/tailscale/tailscaled.state &
-        sleep 2
-        tailscale up --authkey="$TS_AUTHKEY" --hostname=htlink-ts --accept-dns=true
-        tail -f /dev/null
   mongodb:
     image: mongodb/mongodb-community-server:latest
     ports:
@@ -55,6 +34,14 @@ services:
       MONGODB_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
     volumes:
       - mongodb-data:/data/db
+  mongo-admin:
+      image: mongo-express:latest
+      ports:
+        - "8081:8081"
+      environment:
+        ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+        ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+        ME_CONFIG_MONGODB_SERVER: mongodb
 
 volumes:
   mongodb-data:
