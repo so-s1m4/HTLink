@@ -46,7 +46,7 @@ services:
     image: mongo-express:latest
     container_name: mongo-admin
     ports:
-      - "8000:8000"
+      - "8040:8040"
     depends_on:
       mongodb:
         condition: service_healthy
