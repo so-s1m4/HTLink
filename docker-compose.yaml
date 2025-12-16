@@ -42,14 +42,6 @@ services:
       timeout: 5s
       retries: 20
 
-  mongo-gui:
-    container_name: "mongo-gui"
-    image: ugleiton/mongo-gui
-    restart: always
-    ports:
-      - "8898:8898"
-    environment:
-      - MONGO_URL=mongodb://mongodb:27017
 
 volumes:
   mongodb-data:
