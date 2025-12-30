@@ -14,6 +14,7 @@ import TurndownService from 'turndown';
 import { ProjectsService } from '@core/services/projects.service';
 import { NgIcon } from "@ng-icons/core";
 import { Icons } from '@core/types/icons.enum';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-create-project',
@@ -71,6 +72,8 @@ export class CreateProject implements OnInit {
   fileError = '';
   loadError = '';
   Icons = Icons;
+
+  router = inject(Router);
 
   constructor(
     private fb: FormBuilder,
@@ -159,6 +162,7 @@ export class CreateProject implements OnInit {
     if (this.createForm.invalid) {
       return;
     }
+    this.isLoading = true;
     const formValue = this.createForm.value;
     const data: ProjectCreateData = {
       title: formValue.title!,
@@ -172,8 +176,10 @@ export class CreateProject implements OnInit {
     };
     try {
       const result = await this.projectsService.createProject(data);
+      this.router.navigate(['/projects', result.project.id]);
     } catch (error) {
       console.error('Error creating project:', error);
+      this.isLoading = false;
     }
   }
   ngOnDestroy() {

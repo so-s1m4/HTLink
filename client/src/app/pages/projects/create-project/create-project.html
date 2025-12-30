@@ -134,11 +134,11 @@
     @if (createForm.valid) {
     <div class="btn"
       style="position: absolute; height: 2rem; width: 3rem; top: 50%; right: 10px; transform: translateY(-50%); color: var(--main-color);"
-      (click)="createProject()">Finish</div>
+      (click)="isLoading ? null : createProject()">{{ isLoading ? 'Loading...' : 'Finish' }}</div>
     }
   </div>
 
-  <div class="content" [formGroup]="createForm">
+  <div class="content" [formGroup]="createForm" style="display: flex; flex-direction: column; gap: 1rem; justify-content: flex-start; padding: 1rem;">
     <app-block class="way">
       <div class="header">
         Repo Link (GitHub / GitLab)
