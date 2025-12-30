@@ -14,27 +14,6 @@ export class ProjectsService {
   }
 
   async getProject(id: string | null): Promise<{ project: ProjectType }> {
-    if (isDevMode) {
-      return {
-        project: {
-          id: '1',
-          title: 'Sample Project',
-          shortDescription: 'This is a sample project description.',
-          fullReadme: 'Detailed README content goes here.',
-          category: {id: 'cat1', name: 'Web Development'},
-          ownerId: 'user1',
-          tags: [{id: 'tag1', name: 'Angular'}, {id: 'tag2', name: 'TypeScript'}],
-          images: [{
-            image_path: 'https://via.placeholder.com/150',
-            id: "piauhsdla"
-          }, {image_path: 'https://via.placeholder.com/150', id: "piauhsdla"}],
-          deadline: '2024-12-31',
-          createdAt: '2024-01-01T00:00:00Z',
-          updatedAt: '2024-01-01T00:00:00Z',
-          status: 'draft',
-        }
-      }
-    }
     return firstValueFrom(this.http.get<{ project: ProjectType }>(`/api/projects/${id}/`));
   }
 
@@ -80,7 +59,7 @@ export class ProjectsService {
     ).then((res) => res.isAvailable);
   }
 
-  async createProject(data: ProjectCreateData): Promise<ProjectType> {
+  async createProject(data: ProjectCreateData): Promise<{project: ProjectType}> {
     const formData = new FormData();
     formData.append('title', data.title);
     formData.append('shortDescription', data.shortDescription);
@@ -95,6 +74,6 @@ export class ProjectsService {
     data.skills.forEach((skill) => formData.append('skills', skill));
     data.images.forEach((image) => formData.append('image', image));
 
-    return firstValueFrom(this.http.post<ProjectType>('/api/projects/', formData));
+    return firstValueFrom(this.http.post<{project: ProjectType}>('/api/projects/', formData));
   }
 }
