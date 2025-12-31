@@ -1,0 +1,50 @@
+<app-block>
+    <div class="header">
+        <div class="avatar"><img [src]="(data().user.photo_path ?? '') | img" alt=""></div>
+        <div class="info">
+            <div class="name">
+                {{data().user.first_name}} {{data().user.last_name}}
+            </div>
+            <div class="rating">
+                <ng-icon [name]="Icons.Star" class="star" size="1.25rem"></ng-icon>
+                <span>{{data().rating.toFixed(1)}}</span>
+            </div>
+        </div>
+        <div class="category">
+            <app-tag type="department">{{data().category.name}}</app-tag>
+        </div>
+    </div>
+    <div class="body">
+        <div class="title">
+            {{ data().title }}
+        </div>
+        <div class="description">
+            {{
+                data().description.length > 70 ? data().description.slice(1, 70)+'...' : data().description.slice(1, 70)
+            }}
+        </div>
+        <div class="tags">
+            @for (tag of data().tags; track tag.id) {
+                <app-tag type="class">{{ tag.name }}</app-tag>
+            }
+        </div>
+    </div>
+    <div class="footer">
+        <div class="btn main" (click)="modalOpen = true">
+            Anfragen
+        </div>
+    </div>
+</app-block>
+
+<app-modal *ngIf="modalOpen" (click)="modalOpen=false">
+    <app-block (click)="stopPropagation($event)" class="RequestOfferModal">
+        <div class="header">
+            <h3>Anfrage für "{{data().title}}" senden</h3>
+            <ng-icon class="btn close" (click)="modalOpen = false" [name]="Icons.Cross"></ng-icon>
+        </div>
+        <div class="body">
+            <ng-icon [name]="Icons.Email"></ng-icon>
+            <a [href]="`mailto:${data().user.mail}?subject=${`Anfrage%20zum%20${data().title}`}&body=`">{{ data().user.mail }}</a>
+        </div>
+    </app-block>
+</app-modal>

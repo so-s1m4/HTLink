@@ -18,6 +18,7 @@
   flex-wrap: wrap;
   gap: .5rem;
   align-items: center;
+
 }
 @media (max-width: 800px) {
   .btn.main p {

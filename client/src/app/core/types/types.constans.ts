@@ -60,3 +60,19 @@ export enum NotificationType {
   Warning = 3,
   Error = 4,
 }
+
+export type OfferType = {
+  id: string;
+  user: Partial<ProfileType>;
+  rating: number;
+  category: {
+    id: string;
+    name: string;
+  };
+  title: string;
+  description: string;
+  price: number;
+  createdAt: string;
+  updatedAt?: string;
+  tags: TagType[];
+}

@@ -49,6 +49,8 @@
 
   overflow: auto;
   z-index: 1;
+
+  display: flex;
 }
 
 @media (max-width: 800px) {

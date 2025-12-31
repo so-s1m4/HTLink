@@ -1,1 +1,7 @@
-<p>marketplace works!</p>
+<app-search-bar (submit)="onSearchSubmit($event)" [filters]="filters"></app-search-bar>
+
+<div class="holder">
+    @for (item of offers(); track item.id) {
+        <app-offer [data]="item"></app-offer>
+    }
+</div>

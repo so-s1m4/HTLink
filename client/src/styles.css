@@ -12,7 +12,7 @@ html, body {
   --primary-color: white;
   --contrast-color: black;
 
-  --main-color: #9CCE2B;
+  --main-color: #6cc34e;
   --main-color-light:
   radial-gradient(circle, var(--main-color) 1px, transparent 8px)
   0 0 / 4px 4px
