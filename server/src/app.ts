@@ -38,6 +38,7 @@ import users from "./modules/users/users.routes";
 import login from "./modules/users/users.auth.routes"
 import projects from "./modules/projects/projects.router";
 import categories from "./modules/categories/category.routes";
+import roles from "./modules/roles/roles.router";
 import offers from "./modules/offers/offers.router";
 
 app.use('/api/', login)
@@ -45,6 +46,7 @@ app.use('/api/skills', skills)
 app.use('/api/users', users)
 app.use('/api/projects', projects)
 app.use('/api/categories', categories)
+app.use('/api/roles', roles)
 app.use('/api/offers', offers)
 
 
