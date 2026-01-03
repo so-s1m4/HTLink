@@ -1,7 +1,7 @@
 import {Router} from "express";
 import {ErrorWrapper} from "../../common/utils/utils.wrappers";
 import ProjectsController from "./projects.controller";
-import { upload } from "../../common/multer/multer.photo";
+import {upload} from "../../common/multer/multer.photo";
 import JWTMiddleware from "../../common/middlewares/JWTMiddleware";
 
 const projectsRouter = Router();

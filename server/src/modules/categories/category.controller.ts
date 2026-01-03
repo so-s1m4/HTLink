@@ -6,4 +6,8 @@ export default class CategoryController {
         const categories = await CategoryService.getCategories();
         res.json(categories);
     }
+    static async getCategoriesWithRoles(req: Request, res: Response) {
+      const categories = await CategoryService.getCategoriesWithRoles(req);
+      res.json(categories);
+    }
 }
