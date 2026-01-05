@@ -4,7 +4,6 @@ export const category = [
     "Web development",
     "Mobile development",
     "Design",
-    "Fullstack",
     "AI",
     "Game development",
     "Data science",
