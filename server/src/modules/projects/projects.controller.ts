@@ -42,7 +42,6 @@ export default class ProjectsController {
 
   }
 
-
   static async getOwnerProjects(req: Request, res: Response, next: NextFunction) {
 
     const paramId = req.params.id;

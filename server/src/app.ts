@@ -39,6 +39,10 @@ import login from "./modules/users/users.auth.routes"
 import projects from "./modules/projects/projects.router";
 import categories from "./modules/categories/category.routes";
 import roles from "./modules/roles/roles.router";
+<<<<<<< HEAD
+=======
+import offers from "./modules/offers/offers.router";
+>>>>>>> 1262eb1ffa83d8fc965331df745d4f2355567f69
 
 app.use('/api/', login)
 app.use('/api/skills', skills)
@@ -46,6 +50,10 @@ app.use('/api/users', users)
 app.use('/api/projects', projects)
 app.use('/api/categories', categories)
 app.use('/api/roles', roles)
+<<<<<<< HEAD
+=======
+app.use('/api/offers', offers)
+>>>>>>> 1262eb1ffa83d8fc965331df745d4f2355567f69
 
 
 // Additional handlers

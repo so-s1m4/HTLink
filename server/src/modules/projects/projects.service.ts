@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import {CreateProjectDto} from "./dto/create.project.dto";
 import {Project, ProjectStatus} from "./projects.model";
 import {ErrorWithStatus} from "../../common/middlewares/errorHandlerMiddleware";
@@ -8,6 +9,19 @@ import {UpdateProjectDto} from "./dto/patch.project.dto";
 import {ListProjectsQueryDto} from "./dto/list.projects.dto";
 import {ISkill} from "../skills/skills.model";
 import {Category, ICategory} from "../categories/category.model";
+=======
+import { CreateProjectDto } from "./dto/create.project.dto";
+import { Project, ProjectStatus } from "./projects.model";
+import { ErrorWithStatus } from "../../common/middlewares/errorHandlerMiddleware";
+import mongoose from "mongoose";
+import { fetchCategoryOrFail, fetchSkillsOrFail, toObjectId } from "./utils/project.helpers";
+import { IImage, Image } from "./images/image.model";
+import { UpdateProjectDto } from "./dto/patch.project.dto";
+import { ListProjectsQueryDto } from "./dto/list.projects.dto";
+import {ISkill, Skill} from "../skills/skills.model";
+import { Category, ICategory } from "../categories/category.model";
+import { mapToFullProjectResponseDto } from "./projects.mappers";
+>>>>>>> 1262eb1ffa83d8fc965331df745d4f2355567f69
 
 
 // helpers moved to ./utils/project.helpers
@@ -43,7 +57,11 @@ export default class ProjectsService {
     }>("skills").populate<{ categoryId: ICategory }>("categoryId")
 
     if (!finishedProject) {
+<<<<<<< HEAD
       throw new ErrorWithStatus(404, "Project not found");
+=======
+        return mapToFullProjectResponseDto(finishedProject);
+>>>>>>> 1262eb1ffa83d8fc965331df745d4f2355567f69
     }
 
     return {
@@ -216,7 +234,11 @@ export default class ProjectsService {
     return await this.listProjects({ownerId});
   }
 
+<<<<<<< HEAD
   static async updateProject(projectId: string, updateProjectDto: UpdateProjectDto, userId: string) {
+=======
+        return mapToFullProjectResponseDto(finishedProject);
+>>>>>>> 1262eb1ffa83d8fc965331df745d4f2355567f69
 
     if (!mongoose.Types.ObjectId.isValid(projectId)) {
       throw new ErrorWithStatus(400, "Invalid project id");
@@ -271,10 +293,14 @@ export default class ProjectsService {
     }
   }
 
+<<<<<<< HEAD
   static async deleteProject(projectId: string, userId: string) {
 
     if (!mongoose.Types.ObjectId.isValid(projectId)) {
       throw new ErrorWithStatus(400, "Invalid project id");
+=======
+        return mapToFullProjectResponseDto(finishedProject);
+>>>>>>> 1262eb1ffa83d8fc965331df745d4f2355567f69
     }
     if (!mongoose.Types.ObjectId.isValid(userId)) throw new ErrorWithStatus(400, "Invalid user id");
 
