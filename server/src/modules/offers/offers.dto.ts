@@ -4,7 +4,7 @@ import Joi from "joi"
 export interface CreateOfferDTO {
     title: string,
     description: string,
-    phoneNumber: string,
+    phoneNumber?: string,
     price?: number,
     photo_path?: string,
     skills: string[]
@@ -15,7 +15,6 @@ export const CreateOfferSchema = Joi.object<CreateOfferDTO>({
     description: Joi.string().max(1000).required(),
     phoneNumber: Joi.string()
         .pattern(/^\+?[1-9]\d{7,14}$/)
-        .required()
         .messages({
             "string.pattern.base": "Phone number must be a valid international phone number",
         }),
@@ -55,7 +54,7 @@ export interface GetOffersDTO {
 }
 
 export const GetOffersSchema = Joi.object<GetOffersDTO>({
-    title: Joi.string().max(100).optional(),
+    title: Joi.string().max(100).allow('').optional(),
     skills: Joi.array().items(Joi.string()).default([]),
     offset: Joi.number().min(0).default(0),
     limit: Joi.number().positive().max(50).default(20)
