@@ -7,7 +7,10 @@ export interface UpdateMeDTO {
 	github_link?: string,
 	linkedin_link?: string,
 	banner_link?: string,
-	skills?: string[]
+	skills?: string[],
+	class?: string,
+	department?: Department,
+	password?: string,
 }
 
 export const UpdateMeSchema = Joi.object<UpdateMeDTO>({
@@ -16,7 +19,10 @@ export const UpdateMeSchema = Joi.object<UpdateMeDTO>({
 	github_link: Joi.string().max(100).optional(),
 	linkedin_link: Joi.string().max(100).optional(),
 	banner_link: Joi.string().max(100).optional(),
-	skills: Joi.array().items(Joi.string()).optional()
+	skills: Joi.array().items(Joi.string()).optional(),
+	class: Joi.string().pattern(/^[1-5][A-Z]{1}[A-Z]{2,4}$/i).optional(),
+	department: Joi.string().valid(...departmentsList).optional(),
+	password: Joi.string().optional(),
 }).min(1).required()
 
 
@@ -24,7 +30,6 @@ export interface GetUsersDTO {
 	department?: Department,
 	class?: string,
 	nameContains?: string,
-	pc_id?: string,
 	offset: number,
 	limit: number
 }
@@ -33,7 +38,6 @@ export const GetUsersSchema = Joi.object<GetUsersDTO>({
 	department: Joi.string().valid(...departmentsList).optional(),
 	class: Joi.string().optional(),
 	nameContains: Joi.string().min(1).max(20).optional(),
-	pc_id: Joi.string().optional(),
 	offset: Joi.number().min(0).default(0),
 	limit: Joi.number().positive().max(50).default(20)
 })

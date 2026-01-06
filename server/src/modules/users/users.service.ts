@@ -4,6 +4,8 @@ import { User } from "./users.model";
 import UserMapper from "./users.mappers";
 import deleteFile from "../../common/utils/utils.deleteFile";
 import { Skill } from "../skills/skills.model";
+import bcrypt from 'bcrypt';
+import { config } from "../../config/config";
 
 class UsersService {
 	static async updateMe(userId: string, dto: UpdateMeDTO) {
@@ -17,6 +19,9 @@ class UsersService {
 			await deleteFile(user.photo_path)
 		}
 		user.set(dto)
+		if (dto.password) {
+			user.password = await bcrypt.hash(dto.password, config.PASSWORD_SALT)
+		}
 		await user.save()
 		const updatedUser = await User.findById(userId).populate('skills');
 		return UserMapper.toPublicUser(updatedUser!)
@@ -31,14 +36,19 @@ class UsersService {
 	static async getUsers(dto: GetUsersDTO) {
 		const query: any = {}
 		if (dto.department) query.department = dto.department
-		if (dto.class) query.class = { $regex: '^' + dto.class, $options: 'i' }
-		if (dto.pc_id) query.pc_number = dto.pc_id
+		if (dto.class) {
+			// Escape special regex characters to prevent regex injection
+			const escapedClass = dto.class.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+			query.class = { $regex: '^' + escapedClass, $options: 'i' }
+		}
 		
 		// Build the search query for nameContains using $or to search in first_name or last_name
 		if (dto.nameContains) {
+			// Escape special regex characters to prevent regex injection
+			const escapedName = dto.nameContains.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 			query.$or = [
-				{ first_name: { $regex: dto.nameContains, $options: 'i' } },
-				{ last_name: { $regex: dto.nameContains, $options: 'i' } }
+				{ first_name: { $regex: escapedName, $options: 'i' } },
+				{ last_name: { $regex: escapedName, $options: 'i' } }
 			]
 		}
 		const users = await User.find(query).skip(dto.offset).limit(dto.limit).populate('skills')	
