@@ -13,7 +13,7 @@ export const codeSchema = new Schema<ICode>({
   email: { type: String, required: true },
   hash_code: { type: String, required: true },
   attempts: { type: Number, required: true, default: 5 },
-  expires_at: { type: Date, required: true, default: new Date(Date.now() + 20 * 60 * 1000) },
+  expires_at: { type: Date, required: true, default: () => new Date(Date.now() + 20 * 60 * 1000) },
   created_at: { type: Date, required: true, default: Date.now },
 });
 
