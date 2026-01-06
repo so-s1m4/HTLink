@@ -1,5 +1,6 @@
 import { IEmailService } from "./email.interface";
 import { DevEmailService } from "./dev.email.service";
+import { ResendEmailService } from "./resend.email.service";
 import { config } from "../../../config/config";
 
 export class EmailServiceFactory {
@@ -7,8 +8,7 @@ export class EmailServiceFactory {
     
     switch (config.EMAIL_TYPE) {
       case 'production':
-        // TODO: Повернути production email service коли буде готовий
-        return new DevEmailService();
+        return new ResendEmailService(config.RESEND_API_KEY, config.RESEND_FROM_EMAIL);
       case 'dev':
       default:
         return new DevEmailService();

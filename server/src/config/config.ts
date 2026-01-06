@@ -14,6 +14,8 @@ interface Config {
         searchBases: string[]
     },
     EMAIL_TYPE: string,
+    RESEND_API_KEY: string,
+    RESEND_FROM_EMAIL: string,
 }
 
 export const config: Config = {
@@ -28,5 +30,7 @@ export const config: Config = {
         bindPW: process.env.LDAP_BIND_PW ?? "",
         searchBases: process.env.LDAP_SEARCH_BASES ? process.env.LDAP_SEARCH_BASES.split(";"): []
     },
-    EMAIL_TYPE: process.env.EMAIL_TYPE || "dev"
+    EMAIL_TYPE: process.env.EMAIL_TYPE || "dev",
+    RESEND_API_KEY: process.env.RESEND_API_KEY || "",
+    RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev",
 }

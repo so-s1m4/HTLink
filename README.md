@@ -76,6 +76,10 @@ MONGO_URI_COMPOSE=mongodb://username:pass@mongodb:27017/dbname?authSource=admin
 MONGO_INITDB_ROOT_USERNAME=username
 MONGO_INITDB_ROOT_PASSWORD=pass
 
+EMAIL_TYPE=production
+RESEND_API_KEY=re_your_actual_api_key_here
+RESEND_FROM_EMAIL=onboarding@resend.dev
+# or dev for tests
 
 # CORS Configuration
 DOMEN=*

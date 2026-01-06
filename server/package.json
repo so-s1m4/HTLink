@@ -43,6 +43,7 @@
     "jsonwebtoken": "^9.0.2",
     "ldapts": "^8.0.9",
     "mongoose": "^8.19.2",
-    "multer": "^2.0.2"
+    "multer": "^2.0.2",
+    "resend": "^6.6.0"
   }
 }
