@@ -41,7 +41,8 @@ export class ProfileService {
   async updateProfile(data: any): Promise<any> {
     const dataNew = new FormData();
     for (const key in data) {
-      if (!data[key]) {
+      // Allow password field even if it's not truthy to update empty values
+      if (!data[key] && key !== 'password' && key !== 'class' && key !== 'department') {
         continue;
       }
       if (key === 'photo_path' && typeof data[key] === 'string') {
@@ -52,10 +53,15 @@ export class ProfileService {
         continue;
       }
       if (key === 'skills') {
-        data[key].forEach((id: TagType, i:number) => dataNew.append(`skills[${i}]`, id.id));
-        continue
+        if (Array.isArray(data[key])) {
+          data[key].forEach((id: TagType, i:number) => dataNew.append(`skills[${i}]`, id.id));
+        }
+        continue;
       }
-      dataNew.append(key, data[key]);
+      // Add all other fields including password, class, department, banner_link
+      if (data[key] !== null && data[key] !== undefined) {
+        dataNew.append(key, data[key]);
+      }
     }
     return firstValueFrom(this.http.patch('/api/users/me', dataNew)).then((response: any) => {
       this.notificationsService.addNotification('Profile updated successfully', 2);

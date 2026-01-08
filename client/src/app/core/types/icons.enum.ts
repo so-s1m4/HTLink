@@ -24,6 +24,7 @@ export enum Icons {
   Likes = 'heroHeart',
   Link = 'heroLink',
   LinkedIn = 'heroLogoLinkedin',
+  LockClosed = 'heroLockClosed',
   Logout = 'heroArrowLeftStartOnRectangle',
   Marketplace = 'heroInbox',
   Messages = 'heroEnvelope',

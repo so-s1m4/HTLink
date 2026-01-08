@@ -1,25 +1,142 @@
 <app-block>
-  <form [formGroup]="loginForm" name="loginForm">
-  <h2>Login</h2>
-  <div class="input-holder">
-    <label for="email">Email</label>
-    <input
-      formControlName="email"
-      type="email"
-    >
-      <div class="send-code" style="color:blue; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; z-index: 10;" (click)="sendVerificationCode()">
-          Send
+  <div class="login-container">
+    <!-- Header -->
+    <div class="login-header">
+      <div class="logo-title">
+        <!-- <div class="logo">HT</div> -->
+        <h2>HTLink</h2>
       </div>
+      <p class="subtitle">Sign in to your account</p>
+    </div>
+
+    <!-- Method Tabs -->
+    <div class="login-tabs">
+      <button 
+        type="button"
+        class="tab-button" 
+        [class.active]="loginMethod() === 'code'"
+        (click)="switchLoginMethod('code')">
+        Email Verification
+      </button>
+      <button 
+        type="button"
+        class="tab-button" 
+        [class.active]="loginMethod() === 'password'"
+        (click)="switchLoginMethod('password')">
+        Password Login
+      </button>
+    </div>
+
+    <!-- Error Message -->
+    <div class="error-message" *ngIf="errorMessage()">
+      <span class="error-icon">⚠</span>
+      {{ errorMessage() }}
+    </div>
+
+    <!-- Success Message for Code Sent -->
+    <div class="success-message" *ngIf="codeSent() && loginMethod() === 'code'">
+      <span class="success-icon">✓</span>
+      Verification code sent! Check your email.
+    </div>
+
+    <!-- Email Verification Form -->
+    <form 
+      *ngIf="loginMethod() === 'code'" 
+      [formGroup]="codeLoginForm" 
+      class="login-form"
+      (ngSubmit)="loginWithCode()">
+      
+      <div class="form-description">
+        <p>Enter your school email to receive a 4-digit verification code.</p>
+      </div>
+
+      <div class="input-holder">
+        <label for="email">School Email</label>
+        <input
+          id="email"
+          formControlName="email"
+          type="email"
+          placeholder="firstname.lastname@htlstp.at"
+          [class.invalid]="codeLoginForm.get('email')?.invalid && codeLoginForm.get('email')?.touched"
+        >
+      </div>
+
+      <button 
+        type="button"
+        class="btn secondary send-code-btn" 
+        (click)="sendVerificationCode()"
+        [disabled]="isLoading() || !codeLoginForm.get('email')?.value">
+        {{ isLoading() && !codeSent() ? 'Sending...' : 'Send Code' }}
+      </button>
+
+      <div class="input-holder" [class.disabled]="!codeSent()">
+        <label for="code">Verification Code</label>
+        <input
+          id="code"
+          formControlName="code"
+          type="text"
+          placeholder="0000"
+          maxlength="4"
+          [disabled]="!codeSent()"
+          [class.invalid]="codeLoginForm.get('code')?.invalid && codeLoginForm.get('code')?.touched"
+        >
+      </div>
+
+      <button 
+        type="submit"
+        class="btn main" 
+        [disabled]="isLoading() || !codeLoginForm.valid">
+        {{ isLoading() && codeSent() ? 'Verifying...' : 'Verify & Login' }}
+      </button>
+      
+      <div class="form-footer">
+        <p>Code valid for 20 minutes. Maximum 5 attempts.</p>
+      </div>
+    </form>
+
+    <!-- Password Login Form -->
+    <form 
+      *ngIf="loginMethod() === 'password'" 
+      [formGroup]="passwordLoginForm" 
+      class="login-form"
+      (ngSubmit)="loginWithPassword()">
+      
+      <div class="form-description">
+        <p>Sign in with your school email and password.</p>
+      </div>
+
+      <div class="input-holder">
+        <label for="mail">School Email</label>
+        <input
+          id="mail"
+          formControlName="mail"
+          type="email"
+          placeholder="firstname.lastname@htlstp.at"
+          [class.invalid]="passwordLoginForm.get('mail')?.invalid && passwordLoginForm.get('mail')?.touched"
+        >
+      </div>
+
+      <div class="input-holder">
+        <label for="password">Password</label>
+        <input
+          id="password"
+          formControlName="password"
+          type="password"
+          placeholder="Enter your password"
+          [class.invalid]="passwordLoginForm.get('password')?.invalid && passwordLoginForm.get('password')?.touched"
+        >
+      </div>
+
+      <button 
+        type="submit"
+        class="btn main" 
+        [disabled]="isLoading() || !passwordLoginForm.valid">
+        {{ isLoading() ? 'Signing in...' : 'Sign In' }}
+      </button>
+
+      <div class="form-footer">
+        <p>Don't have a password? Use email verification instead.</p>
+      </div>
+    </form>
   </div>
-    <div class="input-holder">
-      <label for="code">Code</label>
-      <input
-        formControlName="code"
-        type="code"
-      >
-    </div>
-    <div class="btn main" (click)="login()">
-      Verify & Login
-    </div>
-  </form>
 </app-block>

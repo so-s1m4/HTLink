@@ -10,51 +10,117 @@
       </div>
     }
   </div>
-  <form [formGroup]="profileForm" class="body">
-    <app-block style="align-items: center; grid-area: a">
+  <div class="body">
+    <app-block class="photo-section">
       <img class="avatar" [src]="profileForm.value.photo_path" alt="">
       <label class="btn secondary" for="fileInput">Change Photo</label>
       <input type="file" hidden id="fileInput" accept="image/*"  (change)="onFileSelected($event)" />
     </app-block>
-    <app-block style="grid-area: b">
-      <div class="header">
-        <h3>Bio</h3>
-      </div>
-      <div class="content">
-        <div class="input-holder big">
-          <label>Tell us about yourself</label>
-          <textarea formControlName="description" placeholder="" ></textarea>
+
+    <form [formGroup]="profileForm" class="settings-form">
+      <app-block>
+        <div class="header">
+          <ng-icon [name]="Icons.User"></ng-icon>
+          <h3>Personal Info</h3>
         </div>
-      </div>
-    </app-block>
-    <app-block style="grid-area: c">
-      <div class="header">
-        <h3>Links</h3>
-      </div>
-      <div class="content">
-        <div class="input-holder">
-          <label>GitHub.com</label>
-          <input formControlName="github_link" type="text" placeholder="" />
+        <div class="content">
+          <div class="input-holder big">
+            <label>Bio (max 300 characters)</label>
+            <textarea formControlName="description" placeholder="Tell us about yourself..."></textarea>
+          </div>
+          <div class="form-row">
+            <div class="input-holder">
+              <label>Class</label>
+              <input formControlName="class" type="text" placeholder="e.g. 3AHIF" />
+            </div>
+            <div class="input-holder">
+              <label>Department</label>
+              <select formControlName="department">
+                <option [value]="null">Select department</option>
+                @for (dept of departments; track dept) {
+                  <option [value]="dept">{{dept}}</option>
+                }
+              </select>
+            </div>
+          </div>
         </div>
-        <div class="input-holder">
-          <label>LinkedIn.com</label>
-          <input formControlName="linkedin_link" type="text" placeholder="" />
+      </app-block>
+
+      <app-block>
+        <div class="header">
+          <ng-icon [name]="Icons.Link"></ng-icon>
+          <h3>Links</h3>
         </div>
-      </div>
-    </app-block>
-    <app-block style="grid-area: d">
-      <div class="header">
-        <h3>Skills</h3>
-      </div>
-      <div class="content">
-        <app-select value="" class="add-skill" (change)="addSkill($event)" [options]="toOptions(skills)">
-        </app-select>
-        <div class="tags-holder">
-          @for (skill of profileForm.value.skills; track skill.id) {
-            <app-tag [removable]="true" (remove)="removeSkill(skill)">{{skill.name}}</app-tag>
-          }
+        <div class="content">
+          <div class="input-holder">
+            <label>GitHub</label>
+            <input formControlName="github_link" type="text" placeholder="https://github.com/username" />
+          </div>
+          <div class="input-holder">
+            <label>LinkedIn</label>
+            <input formControlName="linkedin_link" type="text" placeholder="https://linkedin.com/in/username" />
+          </div>
+          <div class="input-holder">
+            <label>Banner URL</label>
+            <input formControlName="banner_link" type="text" placeholder="https://example.com/banner.jpg" />
+          </div>
         </div>
-      </div>
-    </app-block>
-  </form>
+      </app-block>
+
+      <app-block>
+        <div class="header">
+          <ng-icon [name]="Icons.Code"></ng-icon>
+          <h3>Skills</h3>
+        </div>
+        <div class="content">
+          <app-select value="" class="add-skill" (change)="addSkill($event)" [options]="toOptions(skills)">
+          </app-select>
+          <div class="tags-holder">
+            @for (skill of profileForm.value.skills; track skill.id) {
+              <app-tag [removable]="true" (remove)="removeSkill(skill)">{{skill.name}}</app-tag>
+            }
+          </div>
+        </div>
+      </app-block>
+
+      <app-block>
+        <div class="header">
+          <ng-icon [name]="Icons.LockClosed"></ng-icon>
+          <h3>Security</h3>
+        </div>
+        @if (!showPasswordSection) {
+          <div class="content">
+            <p class="info-text">Keep your account secure by updating your password regularly.</p>
+            <button type="button" class="btn main" (click)="showPasswordSection = true">
+              <ng-icon [name]="Icons.LockClosed"></ng-icon>
+              Change Password
+            </button>
+          </div>
+        } @else {
+          <form [formGroup]="passwordForm" class="content password-form">
+            <div class="input-holder">
+              <label>New Password</label>
+              <input formControlName="password" type="password" placeholder="Min 6 characters" />
+            </div>
+            <div class="input-holder">
+              <label>Confirm Password</label>
+              <input formControlName="confirmPassword" type="password" placeholder="Re-enter password" />
+            </div>
+            <div class="password-actions">
+              <button type="button" class="btn secondary" (click)="showPasswordSection = false; passwordForm.reset()">
+                Cancel
+              </button>
+              <button 
+                type="button" 
+                class="btn main" 
+                [disabled]="!passwordForm.valid || isPending"
+                (click)="changePassword()">
+                {{ isPending ? 'Updating...' : 'Update Password' }}
+              </button>
+            </div>
+          </form>
+        }
+      </app-block>
+    </form>
+  </div>
 }

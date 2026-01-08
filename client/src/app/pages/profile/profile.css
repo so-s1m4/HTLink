@@ -20,19 +20,33 @@ app-block .header {
     height: fit-content;
   }
 
-  .btn.edit {
+  .btn.settings {
     display: flex;
+    align-items: center;
+    justify-content: center;
     gap: .3rem;
     position: absolute;
     right: 1rem;
     top: 1rem;
-    width: 2rem;
-    height: 2rem;
-
-    color: var(--primary-color);
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    transition: all 0.3s ease;
 
     ng-icon {
-      color: var(--primary-color);
+      color: var(--contrast-color);
+    }
+
+    &:hover {
+      background-color: var(--main-color);
+      transform: scale(1.05);
+      
+      ng-icon {
+        color: var(--primary-color);
+      }
     }
   }
 }
@@ -43,7 +57,9 @@ app-block .header {
     .banner {
       height: 10rem;
       width: 100%;
-      background: var(--main-color-light);
+      background: var(--bg-color);
+      background-size: cover;
+      background-position: center;
       border-radius: 2rem 2rem 0 0;
     }
     .avatar {
@@ -104,6 +120,21 @@ app-block .header {
     .bio {
       font-size: .8rem;
       color: var(--gray-color);
+      
+      &.empty {
+        font-style: italic;
+        opacity: 0.7;
+        
+        a {
+          color: var(--main-color);
+          text-decoration: underline;
+          cursor: pointer;
+          
+          &:hover {
+            color: var(--hover-gray-color);
+          }
+        }
+      }
     }
     .email, .registered-since {
       display: flex;
@@ -176,6 +207,31 @@ app-block .header {
       flex-direction: column;
       align-items: center;
       gap: 1rem;
+    }
+    
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 3rem 1rem;
+      color: var(--gray-color);
+      
+      ng-icon {
+        color: var(--gray-color);
+        opacity: 0.5;
+      }
+      
+      p {
+        font-size: 0.9rem;
+        margin: 0;
+      }
+      
+      .hint {
+        font-size: 0.8rem;
+        opacity: 0.7;
+      }
     }
   }
 }

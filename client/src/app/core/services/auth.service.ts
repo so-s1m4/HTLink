@@ -15,26 +15,44 @@ export class AuthService {
   }
 
   async login(data: {email: string, code: string}): Promise<void> {
-    this.http.post('/api/verify-code', data).subscribe((response: any) => {
-      this.token.set(response.token);
-      this.router.navigate(['/more']);
-      localStorage.setItem('token', response.token);
+    this.http.post('/api/verify-code', data).subscribe({
+      next: (response: any) => {
+        this.token.set(response.token);
+        this.router.navigate(['/more']);
+        localStorage.setItem('token', response.token);
+      },
+      error: (error) => {
+        throw error;
+      }
+    });
+  }
+
+  async loginWithPassword(data: {mail: string, password: string}): Promise<void> {
+    this.http.post('/api/login', data).subscribe({
+      next: (response: any) => {
+        this.token.set(response.token);
+        this.router.navigate(['/more']);
+        localStorage.setItem('token', response.token);
+      },
+      error: (error) => {
+        throw error;
+      }
     });
   }
 
   get isAuthed() {
     return !!this.token();
   }
+  
   logout(): void {
     console.log('logged out');
     this.token.set(null)
     localStorage.removeItem('token');
     this.router.navigate(['/more/login']);
     console.log('logged out 2');
-
   }
 
   askForCode(value: { email: string }) {
-    this.http.post('/api/send-code', value).subscribe();
+    return this.http.post('/api/send-code', value);
   }
 }

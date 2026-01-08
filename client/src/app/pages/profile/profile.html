@@ -1,37 +1,55 @@
 @if (data && data.user()) {
   <app-block class="Main-Info" style="grid-area: a">
     <div class="header">
-      <div class="banner"></div>
+      <div class="banner" [style.background-image]="data.user().banner_link ? 'url(' + data.user().banner_link + ')' : null"></div>
       <div class="action-btns"></div>
       <div class="avatar"><img [src]="data.user().photo_path | img" alt=""></div>
       @if (isMy) {
-        <ng-icon class="btn edit" [routerLink]="'/profile/me/edit'" [name]="Icons.Edit">Edit</ng-icon>
+        <div class="btn settings" [routerLink]="'/profile/me/edit'">
+          <ng-icon [name]="Icons.Settings"></ng-icon>
+        </div>
       }
     </div>
     <div class="body">
       <div class="name"><p style="font-size: 18px">{{data.user().first_name}} {{data.user().last_name.slice(0,1)}}.</p></div>
-      <div class="tags">
-        @if (data.user().class) {
-          <app-tag type="class">{{data.user().class}}</app-tag>
-        }
-        <app-tag type="department">{{data.user().department}}</app-tag>
-        <app-tag type="role">{{data.user().role}}</app-tag>
-      </div>
+      @if (data.user().class || data.user().department || data.user().role) {
+        <div class="tags">
+          @if (data.user().class) {
+            <app-tag type="class">{{data.user().class}}</app-tag>
+          }
+          @if (data.user().department) {
+            <app-tag type="department">{{data.user().department}}</app-tag>
+          }
+          @if (data.user().role) {
+            <app-tag type="role">{{data.user().role}}</app-tag>
+          }
+        </div>
+      }
       <div class="blocks">
         <div class="block-item">
-          <div class="number">{{0}}</div>
+          <div class="number">{{data.projects.length}}</div>
           <div class="label">Projects</div>
         </div>
         <div class="block-item">
-          <div class="number">{{0}}</div>
-          <div class="label">Follower</div>
+          <div class="number">{{data.user().skills.length}}</div>
+          <div class="label">Skills</div>
         </div>
         <div class="block-item">
-          <div class="number">{{0}}</div>
-          <div class="label">Following</div>
+          <div class="number">{{data.user().role || 'Student'}}</div>
+          <div class="label">Role</div>
         </div>
       </div>
-      <div class="bio">{{data.user().description}}</div>
+      @if (data.user().description) {
+        <div class="bio">{{data.user().description}}</div>
+      } @else {
+        <div class="bio empty">
+          @if (isMy) {
+            No bio yet. <a [routerLink]="'/profile/me/edit'">Add one</a> to tell others about yourself!
+          } @else {
+            No bio available.
+          }
+        </div>
+      }
       <div class="email">
         <ng-icon [name]="Icons.Email" size="1.25rem"/> <span>{{data.user().mail}}</span>
       </div>
@@ -86,11 +104,21 @@
       <div class="btn secondary" style="position: absolute; right: 0"> Alle anzeigen</div>
     </div>
     <div class="body">
-      <div class="projects-holder">
-        @for (project of data.projects; track project.id) {
-          <app-project-preview [data]="project"></app-project-preview>
-        }
-      </div>
+      @if (data.projects.length > 0) {
+        <div class="projects-holder">
+          @for (project of data.projects; track project.id) {
+            <app-project-preview [data]="project"></app-project-preview>
+          }
+        </div>
+      } @else {
+        <div class="empty-state">
+          <ng-icon [name]="Icons.Projects" size="3rem"></ng-icon>
+          <p>No projects yet</p>
+          @if (isMy) {
+            <p class="hint">Create your first project to showcase your work!</p>
+          }
+        </div>
+      }
     </div>
   </app-block>
 }
