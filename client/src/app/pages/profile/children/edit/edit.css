@@ -58,8 +58,17 @@ app-block {
   display: grid;
   grid-template-areas:
     'a b'
+    'a b'
     'd c'
-    'e .';
+    'd c'
+    'd .'
+    '. .'
+    '. .'
+    '. .'
+    '. .'
+    '. .'
+;
+  grid-auto-rows: 7.5rem;
 
   padding: 2rem 10%;
 
