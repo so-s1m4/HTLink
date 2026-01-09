@@ -17,7 +17,7 @@ export const CreateOfferSchema = Joi.object<CreateOfferDTO>({
         .pattern(/^\+?[1-9]\d{7,14}$/)
         .messages({
             "string.pattern.base": "Phone number must be a valid international phone number",
-        }),
+        }).optional(),
     price: Joi.number().optional(),
     photo_path: Joi.string().optional(),
     skills: Joi.array().items(Joi.string()).required()

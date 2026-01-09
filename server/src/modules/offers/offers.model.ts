@@ -28,7 +28,6 @@ export const offerSchema = new Schema<IOffer>({
     },
     phoneNumber: {
         type: String,
-        required: true,
         validate: {
             validator: function(v: string) {
                 return /^\+?[1-9]\d{7,14}$/.test(v);
